@@ -1,0 +1,16 @@
+name: EscapaDeLaBestia
+version: '${project.version}'
+main: com.vexmi.escapadelabestia.EscapaBestia
+load: STARTUP
+authors: [ Adrigamer2950 ]
+description: Este es el plugin de Escapa de La Bestia de Vexmi
+
+commands:
+  edlb:
+    aliases: ["escapadelabestia"]
+    permission: edlb.*
+    usage: "Usage: /edlb help"
+
+permissions:
+  edlb.*:
+    default: op
