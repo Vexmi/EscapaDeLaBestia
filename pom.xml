@@ -10,6 +10,7 @@
     <packaging>jar</packaging>
 
     <name>EscapaDeLaBestia</name>
+    <description>Este es el plugin de Escapa de La Bestia de Vexmi</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -50,7 +51,75 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <directory>${project.basedir}/build</directory>
+        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
     </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.1</version>
+                        <configuration>
+                            <outputDirectory>libs/release</outputDirectory>
+                            <finalName>RELEASE-${project.artifactId}-${project.version}</finalName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>prerelease</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.1</version>
+                        <configuration>
+                            <outputDirectory>libs/prerelease</outputDirectory>
+                            <finalName>PRERELEASE-${project.artifactId}-${project.version}</finalName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>beta</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.1</version>
+                        <configuration>
+                            <outputDirectory>libs/beta</outputDirectory>
+                            <finalName>BETA-${project.artifactId}-${project.version}</finalName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.1</version>
+                        <configuration>
+                            <outputDirectory>libs/dev</outputDirectory>
+                            <finalName>DEV-${project.artifactId}-${project.version}</finalName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
@@ -61,9 +130,26 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>https://repo.onarandombox.com/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>spigot-vault-api</id>
+            <url>https://ci.ender.zone/plugin/repository/everything/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
@@ -71,10 +157,34 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.2</version>
+            <type>maven-plugin</type>
         </dependency>
     </dependencies>
+
+    <developers>
+        <developer>
+            <id>Adrigamer2950</id>
+            <name>Adrigamer</name>
+            <email>adrigamer2950@gmail.com</email>
+            <url>https://github.com/adrigamer2950</url>
+            <organization>ADC Team, Vexmi MC</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <properties>
+                <picUrl>https://avatars.githubusercontent.com/u/58531641?v=4</picUrl>
+            </properties>
+        </developer>
+        <developer>
+            <id>SrBigos</id>
+            <name>Bigos</name>
+            <organization>Vexmi MC</organization>
+            <roles>
+                <role>Vexmi MC Owner</role>
+            </roles>
+        </developer>
+    </developers>
 </project>

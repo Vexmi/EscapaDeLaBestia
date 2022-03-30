@@ -1,9 +1,11 @@
-name: EscapaDeLaBestia
+name: '${project.name}'
 version: '${project.version}'
 main: com.vexmi.escapadelabestia.EscapaBestia
 load: STARTUP
 authors: [ Adrigamer2950 ]
-description: Este es el plugin de Escapa de La Bestia de Vexmi
+description: '${project.description}'
+softdepend:
+  - Multiverse-Core
 
 commands:
   edlb:

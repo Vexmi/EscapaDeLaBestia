@@ -25,6 +25,36 @@ public class AdminCmd
             }
             return setLobby(game, player, plugin);
         }
+        else if(args[1].equalsIgnoreCase("setplayersspawn"))
+        {
+            if(!(args.length >= 3))
+            {
+                player.sendMessage("Tienes que poner la partida ._.");
+                return true;
+            }
+            Game game = gameM.getGame(args[2]);
+            if(game == null)
+            {
+                player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
+                return true;
+            }
+            return setPlayersSpawn(game, player, plugin);
+        }
+        else if(args[1].equalsIgnoreCase("setbestiaspawn"))
+        {
+            if(!(args.length >= 3))
+            {
+                player.sendMessage("Tienes que poner la partida ._.");
+                return true;
+            }
+            Game game = gameM.getGame(args[2]);
+            if(game == null)
+            {
+                player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
+                return true;
+            }
+            return setBestiaSpawn(game, player, plugin);
+        }
         else if(args[1].equalsIgnoreCase("setminplayers"))
         {
             if(!(args.length >= 4))
@@ -45,6 +75,7 @@ public class AdminCmd
             }
             catch(NumberFormatException e)
             {
+                player.sendMessage(plugin.colorText("&2El número debe ser un número ._."));
                 e.printStackTrace();
                 return true;
             }
@@ -69,6 +100,7 @@ public class AdminCmd
             }
             catch(NumberFormatException e)
             {
+                player.sendMessage(plugin.colorText("&2El número debe ser un número ._."));
                 e.printStackTrace();
                 return true;
             }
@@ -95,6 +127,22 @@ public class AdminCmd
     {
         Location l = player.getLocation();
         game.setLobby(l);
+        player.sendMessage("Lobby establecido");
+        return true;
+    }
+
+    private boolean setPlayersSpawn(Game game, Player player, EscapaBestia plugin)
+    {
+        Location l = player.getLocation();
+        game.setPlayersSpawn(l);
+        player.sendMessage("Lobby establecido");
+        return true;
+    }
+
+    private boolean setBestiaSpawn(Game game, Player player, EscapaBestia plugin)
+    {
+        Location l = player.getLocation();
+        game.setBestiaSpawn(l);
         player.sendMessage("Lobby establecido");
         return true;
     }

@@ -70,50 +70,7 @@ public class GameManager
         return null;
     }
 
-    public void saveGames() {
-        FileConfiguration games = plugin.getGamesFile();
-        games.set("Games", null);
-        for(Game g : EscapaBestia.games) {
-            String name = g.getName();
-            games.set("Games."+name+".min_players", g.getMinPlayers());
-            games.set("Games."+name+".max_players", g.getMaxPlayers());
-            games.set("Games."+name+".time", g.getMaxTime());
-            Location llobby = g.getLobby();
-            if(llobby != null) {
-                games.set("Games."+name+".lobby.world", llobby.getWorld().getName());
-                games.set("Games."+name+".lobby.x", llobby.getX());
-                games.set("Games."+name+".lobby.y", llobby.getY());
-                games.set("Games."+name+".lobby.z", llobby.getZ());
-                games.set("Games."+name+".lobby.yaw", llobby.getYaw());
-                games.set("Games."+name+".lobby.pitch", llobby.getPitch());
-            }
-
-            Location lSpawnBestia = g.getBestiaSpawn();
-            if(lSpawnBestia != null) {
-                games.set("Games."+name+".bestia.Spawn.world", lSpawnBestia.getWorld().getName());
-                games.set("Games."+name+".bestia.Spawn.x", lSpawnBestia.getX());
-                games.set("Games."+name+".bestia.Spawn.y", lSpawnBestia.getY());
-                games.set("Games."+name+".bestia.Spawn.z", lSpawnBestia.getZ());
-                games.set("Games."+name+".bestia.Spawn.yaw", lSpawnBestia.getYaw());
-                games.set("Games."+name+".bestia.Spawn.pitch", lSpawnBestia.getPitch());
-            }
-
-            Location lSpawnPlayers = g.getPlayersSpawn();
-            if(lSpawnPlayers != null) {
-                games.set("Games."+name+".players.Spawn.world", lSpawnPlayers.getWorld().getName());
-                games.set("Games."+name+".players.Spawn.x", lSpawnPlayers.getX());
-                games.set("Games."+name+".players.Spawn.y", lSpawnPlayers.getY());
-                games.set("Games."+name+".players.Spawn.z", lSpawnPlayers.getZ());
-                games.set("Games."+name+".players.Spawn.yaw", lSpawnPlayers.getYaw());
-                games.set("Games."+name+".players.Spawn.pitch", lSpawnPlayers.getPitch());
-            }
-
-            games.set("Games."+name+".enabled", g.getState().equals(GameState.DISABLED) ? false : true);
-        }
-        plugin.saveGamesFile();
-    }
-
-    public static void playerJoin(Game game, Player player, EscapaBestia plugin) {
+    public static int playerJoin(Game game, Player player, EscapaBestia plugin) {
         FileConfiguration messages = plugin.getMessages();
         EscapaBestiaPlayer pToAdd = new EscapaBestiaPlayer(player);
         game.addPlayer(pToAdd);
@@ -145,15 +102,21 @@ public class GameManager
             player.removePotionEffect(e.getType());
         }
 
-        player.teleport(game.getLobby());
+        if(plugin.getServer().getWorld(game.getLobby().getWorld().getName()) == null)
+        {
+            return 1; //El mundo no fue encontrado
+        }
+        else
+            player.teleport(game.getLobby());
 
         if(game.getActualPlayers() >= game.getMinPlayers() && game.getState().equals(GameState.WAITING) || game.getState().equals(GameState.STARTING)) {
             //cooldown
             cooldownM.cooldownStartGame(game, plugin);
         }
+        return 0; //No hubo ningún fallo
     }
 
-    public static void playerLeave(Game game, Player player, EscapaBestia plugin, boolean finishingGame, boolean closingServer) {
+    public static int playerLeave(Game game, Player player, EscapaBestia plugin, boolean finishingGame, boolean closingServer) {
         EscapaBestiaPlayer edlbP = game.getPlayer(player.getName());
         ItemStack[] savedInventory = edlbP.getSaved().getInvSaved();
         ItemStack[] savedEquipment = edlbP.getSaved().getArmorSaved();
@@ -181,10 +144,17 @@ public class GameManager
         }
 
         FileConfiguration mainlobby = plugin.getMainLobby();
+        World world = null;
+        if(Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
+        {
+            return 1; //El mundo no fue encontrado
+        }
+        else
+            world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
+
         double x = Double.valueOf(mainlobby.getString("MainLobby.x"));
         double y = Double.valueOf(mainlobby.getString("MainLobby.y"));
         double z = Double.valueOf(mainlobby.getString("MainLobby.z"));
-        World world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
         float yaw = Float.valueOf(mainlobby.getString("MainLobby.yaw"));
         float pitch = Float.valueOf(mainlobby.getString("MainLobby.pitch"));
         Location l = new Location(world, x, y, z, yaw, pitch);
@@ -210,6 +180,7 @@ public class GameManager
                 //finishGame(game, plugin);
             //}
         }
+        return 0; //No hubo ningún fallo
     }
 
     @SuppressWarnings("unlikely-arg-type")
@@ -234,12 +205,14 @@ public class GameManager
             if(p.isBestia())
             {
                 Player bestia = p.getPlayer();
+                bestia.sendMessage("teletransportando al spawn de bestias");
                 bestia.teleport(game.getBestiaSpawn());
                 return;
             }
             else
             {
                 Player player = p.getPlayer();
+                player.sendMessage("teletransportando al spawn de jugadores");
                 player.teleport(game.getPlayersSpawn());
                 return;
             }

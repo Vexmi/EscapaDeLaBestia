@@ -16,14 +16,16 @@ public class EBCmd implements CommandExecutor
 {
     private EscapaBestia plugin;
     public EBCmd(EscapaBestia plugin) { this.plugin = plugin; }
-    private GameManager gameM = plugin.gameM;
+    private GameManager gameM = new GameManager(plugin);
     private AdminCmd adminCmd = new AdminCmd();
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
+        sender.sendMessage("asd " + sender.getName());
         if(!(sender instanceof Player))
         {
-            return false;
+            sender.sendMessage(sender.getName());
+            return true;
         }
         Player player = (Player) sender;
         FileConfiguration messages = plugin.getMessages();
@@ -62,7 +64,15 @@ public class EBCmd implements CommandExecutor
                                 {
                                     if(!game.isFull())
                                     {
-                                        GameManager.playerJoin(game, player, plugin);
+                                        if(GameManager.playerJoin(game, player, plugin) == 0)
+                                        {
+                                            return true;
+                                        }
+                                        else if(GameManager.playerJoin(game, player, plugin) == 1)
+                                        {
+                                            player.sendMessage(plugin.colorText("&cError! El mundo de esa partida no existe o no es encontrado."));
+                                            return true;
+                                        }
                                     }
                                     else
                                     {
@@ -102,7 +112,6 @@ public class EBCmd implements CommandExecutor
                 if(function.equalsIgnoreCase("setlobby")) {
                     if (!(args.length >= 3)) {
                         player.sendMessage("Tienes que poner de que partida quieres poner el lobby");
-                        return false;
                     }
                     Game game = gameM.getGame(args[2]);
                     Location l = player.getLocation();
