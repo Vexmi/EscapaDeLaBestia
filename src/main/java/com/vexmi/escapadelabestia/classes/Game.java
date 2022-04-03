@@ -37,14 +37,14 @@ public class Game
         this.isGameFinishing = false;
     }
 
-    public void setGameFinishing(boolean isGameFinishing)
-    {
-        this.isGameFinishing = isGameFinishing;
-    }
-
     public boolean isGameFinishing()
     {
         return isGameFinishing;
+    }
+
+    public void setGameFinishing(boolean isGameFinishing)
+    {
+        this.isGameFinishing = isGameFinishing;
     }
 
     public Location getBestiaSpawn()

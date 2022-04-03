@@ -184,7 +184,7 @@ public class GameManager
     }
 
     @SuppressWarnings("unlikely-arg-type")
-    public static void startGame(Game game, Player player) {
+    public static void startGame(Game game) {
         game.setState(GameState.PLAYING);
         game.determineBestia();
         teleportPlayers(game);

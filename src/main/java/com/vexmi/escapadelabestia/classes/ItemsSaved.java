@@ -13,7 +13,6 @@ public class ItemsSaved {
     private int foodSaved;
     private double healthSaved;
     private double maxHealthSaved;
-
     public ItemsSaved(ItemStack[] invSaved, ItemStack[] armorSaved, GameMode gamemodeSaved, float xpSaved,
                       int levelSaved, int foodSaved, double healthSaved, double maxHealthSaved) {
         super();

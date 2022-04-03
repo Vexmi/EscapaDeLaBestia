@@ -43,10 +43,6 @@ public class GameEvents implements Listener
                     {
                         e.setCancelled(true);
                     }
-                    else
-                    {
-                        return;
-                    }
                 }
             }
         }

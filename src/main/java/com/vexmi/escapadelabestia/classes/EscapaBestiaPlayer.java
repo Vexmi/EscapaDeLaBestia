@@ -10,7 +10,6 @@ public class EscapaBestiaPlayer
     private boolean isBestia;
     private int kills;
     private ItemsSaved saved;
-
     public EscapaBestiaPlayer(Player player)
     {
         this(player, false);

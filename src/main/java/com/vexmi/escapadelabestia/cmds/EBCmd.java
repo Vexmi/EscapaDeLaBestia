@@ -21,10 +21,8 @@ public class EBCmd implements CommandExecutor
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
-        sender.sendMessage("asd " + sender.getName());
         if(!(sender instanceof Player))
         {
-            sender.sendMessage(sender.getName());
             return true;
         }
         Player player = (Player) sender;

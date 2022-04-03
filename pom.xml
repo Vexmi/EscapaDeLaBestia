@@ -54,6 +54,7 @@
         <directory>${project.basedir}/build</directory>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
     </build>
+
     <profiles>
         <profile>
             <id>release</id>

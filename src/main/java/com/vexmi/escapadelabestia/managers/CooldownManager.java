@@ -16,14 +16,12 @@ public class CooldownManager {
 
     int taskID;
     int time;
-    private Game game;
     private EscapaBestia plugin;
     public CooldownManager(EscapaBestia plugin) {
         this.plugin = plugin;
     }
 
     public void cooldownStartGame(Game game, EscapaBestia plugin) {
-        this.game = game;
         this.time = 10;
         game.setTime(this.time);
         FileConfiguration messages = plugin.getMessages();
@@ -37,7 +35,7 @@ public class CooldownManager {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         taskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
-                if(!executeStartGame(plugin)) {
+                if(!executeStartGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(taskID);
                     return;
                 }
@@ -46,7 +44,7 @@ public class CooldownManager {
     }
 
     @SuppressWarnings("unlikely-arg-type")
-    protected boolean executeStartGame(EscapaBestia plugin) {
+    protected boolean executeStartGame(Game game, EscapaBestia plugin) {
         if(game != null && game.getState().equals(GameState.STARTING)) {
             if(time <= 5 && time > 0) {
                 FileConfiguration messages = plugin.getMessages();
@@ -60,7 +58,7 @@ public class CooldownManager {
                 time--;
                 return true;
             }else if(time <= 0) {
-                GameManager.startGame(game, null);
+                GameManager.startGame(game);
                 return false;
             }else {
                 game.decreaseTime();
@@ -80,7 +78,6 @@ public class CooldownManager {
     }
 
     public void cooldownGame(Game game, EscapaBestia plugin) {
-        this.game = game;
         this.time = game.getMaxTime();
         game.setTime(this.time);
         FileConfiguration messages = plugin.getMessages();
@@ -94,7 +91,7 @@ public class CooldownManager {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         taskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
-                if(!executeStartGame(plugin)) {
+                if(!executeStartGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(taskID);
                     return;
                 }
@@ -102,7 +99,7 @@ public class CooldownManager {
         }, 0L, 20L);
     }
 
-    protected boolean executeGame(EscapaBestia plugin) {
+    protected boolean executeGame(Game game, EscapaBestia plugin) {
         if(game != null && game.getState().equals(GameState.PLAYING)) {
             game.decreaseTime();
             if(time == 0) {
@@ -118,7 +115,6 @@ public class CooldownManager {
     }
 
     public void cooldownFinishGame(Game game, final EscapaBestiaPlayer bestia, EscapaBestia plugin) {
-        this.game = game;
         this.time = 10;
         game.setTime(this.time);
         FileConfiguration messages = plugin.getMessages();
@@ -134,7 +130,7 @@ public class CooldownManager {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         taskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
-                if(!executeFinishGame(plugin)) {
+                if(!executeFinishGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(taskID);
                     return;
                 }
@@ -143,7 +139,7 @@ public class CooldownManager {
     }
 
     @SuppressWarnings("null")
-    protected boolean executeFinishGame(EscapaBestia plugin) {
+    protected boolean executeFinishGame(Game game, EscapaBestia plugin) {
         if(game != null && game.getState().equals(GameState.FINISHING)) {
             game.decreaseTime();
             if(time == 0) {

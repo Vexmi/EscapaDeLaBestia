@@ -49,7 +49,7 @@ public class EscapaBestia extends JavaPlugin
         registerMessages();
         registerMainLobby();
         registerGames();
-        //loadGames();
+        loadGames();
 
         Bukkit.getConsoleSender().sendMessage(colorText(name + " &2Plugin Enabled Successfully"));
     }
