@@ -4,6 +4,7 @@ import com.vexmi.escapadelabestia.EscapaBestia;
 import com.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import com.vexmi.escapadelabestia.classes.Game;
 import com.vexmi.escapadelabestia.managers.GameManager;
+import com.vexmi.escapadelabestia.managers.InvManager;
 import com.vexmi.escapadelabestia.utils.AdminCmd;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -15,12 +16,17 @@ import org.bukkit.entity.Player;
 public class EBCmd implements CommandExecutor
 {
     private EscapaBestia plugin;
-    public EBCmd(EscapaBestia plugin) { this.plugin = plugin; }
-    private GameManager gameM = new GameManager(plugin);
-    private AdminCmd adminCmd = new AdminCmd();
+    public EBCmd(EscapaBestia plugin)
+    {
+        this.plugin = plugin;
+    }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
+        GameManager gameM = new GameManager(plugin);
+        AdminCmd adminCmd = new AdminCmd();
+        InvManager invM = new InvManager(plugin);
+
         if(!(sender instanceof Player))
         {
             return true;
@@ -71,6 +77,11 @@ public class EBCmd implements CommandExecutor
                                             player.sendMessage(plugin.colorText("&cError! El mundo de esa partida no existe o no es encontrado."));
                                             return true;
                                         }
+                                        else if(GameManager.playerJoin(game, player, plugin) == 2)
+                                        {
+                                            player.sendMessage(plugin.colorText("&cError! EL lobby de esa partida no existe o no fue encontrado."));
+                                            return true;
+                                        }
                                     }
                                     else
                                     {
@@ -116,6 +127,10 @@ public class EBCmd implements CommandExecutor
                     game.setLobby(l);
                     player.sendMessage("Lobby establecido");
                 }*/
+            }
+            else if(args[0].equalsIgnoreCase("inv"))
+            {
+                invM.createJoinGamesInv(player, 0);
             }
         }
         return true;

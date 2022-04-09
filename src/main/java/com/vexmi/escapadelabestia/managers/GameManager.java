@@ -102,6 +102,11 @@ public class GameManager
             player.removePotionEffect(e.getType());
         }
 
+        if(game.getLobby() == null)
+        {
+            return 2; //El Lobby no existe
+        }
+
         if(plugin.getServer().getWorld(game.getLobby().getWorld().getName()) == null)
         {
             return 1; //El mundo no fue encontrado

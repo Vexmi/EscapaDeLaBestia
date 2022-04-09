@@ -2,3 +2,9 @@ Config:
   prefix: "&1[&3EscapaDeLaBestia&1]"
   onWinCmds:
     - 'minecraft:say hola que tal'
+  joinGamesInv:
+    name: '&2Tonto quien lo- ndeah'
+    fill-glass:
+      material: 'STAINED_GLASS_PANE'
+      amount: 1
+      datatag: 15

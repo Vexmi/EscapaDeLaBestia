@@ -3,6 +3,7 @@ package com.vexmi.escapadelabestia;
 import com.vexmi.escapadelabestia.classes.Game;
 import com.vexmi.escapadelabestia.classes.GameState;
 import com.vexmi.escapadelabestia.cmds.EBCmd;
+import com.vexmi.escapadelabestia.events.InvEvents;
 import com.vexmi.escapadelabestia.managers.GameManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,6 +44,7 @@ public class EscapaBestia extends JavaPlugin
     @Override
     public void onEnable()
     {
+        games = new ArrayList<Game>();
         registerEvents();
         registerCommands();
         registerConfig();
@@ -107,7 +109,6 @@ public class EscapaBestia extends JavaPlugin
 
     @SuppressWarnings("unlikely-arg-type")
     public void loadGames() {
-        games = new ArrayList<Game>();
         FileConfiguration gamesC = getGamesFile();
         if(gamesC.contains("Games")) {
             for(String nameGame : gamesC.getConfigurationSection("Games").getKeys(false)) {
@@ -151,10 +152,12 @@ public class EscapaBestia extends JavaPlugin
                 Game game = new Game(nameGame);
                 game.setMaxPlayers(maxPlayers);
                 game.setMinPlayers(minPlayers);
-                game.setTime(time);
                 game.setLobby(lLobby);
                 game.setPlayersSpawn(lPSpawn);
                 game.setBestiaSpawn(lBSpawn);
+                game.setName(nameGame);
+                game.setMaxTime(time);
+
                 String enabledS = gamesC.getString("Games."+nameGame+".enabled");
                 boolean enabled = enabledS.equals(true);
                 if(!enabled) {
@@ -171,6 +174,7 @@ public class EscapaBestia extends JavaPlugin
     private void registerEvents()
     {
         PluginManager pm = getServer().getPluginManager();
+        pm.registerEvents(new InvEvents(this), this);
     }
 
     private void registerCommands()
