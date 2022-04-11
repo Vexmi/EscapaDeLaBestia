@@ -227,7 +227,7 @@ public class Game
     }
 
     public Location getLobby() {
-        return lobby;
+        return this.lobby;
     }
 
     public void setLobby(Location lobby) {

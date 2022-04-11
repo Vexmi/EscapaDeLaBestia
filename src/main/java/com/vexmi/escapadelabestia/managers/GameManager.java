@@ -4,6 +4,7 @@ import com.vexmi.escapadelabestia.EscapaBestia;
 import com.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import com.vexmi.escapadelabestia.classes.Game;
 import com.vexmi.escapadelabestia.classes.GameState;
+import com.vexmi.escapadelabestia.utils.ErrorCodes;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -49,7 +50,7 @@ public class GameManager
         return null;
     }
 
-    public ArrayList<Game> getGames()
+    public static ArrayList<Game> getGames()
     {
         return EscapaBestia.games;
     }
@@ -71,6 +72,16 @@ public class GameManager
     }
 
     public static int playerJoin(Game game, Player player, EscapaBestia plugin) {
+        for(Game game2 : getGames())
+        {
+            for(EscapaBestiaPlayer ePlayer : game2.getPlayers())
+            {
+                if(ePlayer.getPlayer().equals(player))
+                {
+                    return ErrorCodes.PLAYER_ALREADY_IN_GAME.getCode();
+                }
+            }
+        }
         FileConfiguration messages = plugin.getMessages();
         EscapaBestiaPlayer pToAdd = new EscapaBestiaPlayer(player);
         game.addPlayer(pToAdd);
@@ -103,14 +114,9 @@ public class GameManager
         }
 
         if(game.getLobby() == null)
-        {
-            return 2; //El Lobby no existe
-        }
-
-        if(plugin.getServer().getWorld(game.getLobby().getWorld().getName()) == null)
-        {
-            return 1; //El mundo no fue encontrado
-        }
+            return ErrorCodes.LOBBY_NOT_FOUND.getCode();
+        else if(Bukkit.getWorld(game.getLobby().getWorld().getName()) == null)
+            return ErrorCodes.WORLD_NOT_FOUND.getCode();
         else
             player.teleport(game.getLobby());
 
@@ -118,7 +124,7 @@ public class GameManager
             //cooldown
             cooldownM.cooldownStartGame(game, plugin);
         }
-        return 0; //No hubo ningún fallo
+        return ErrorCodes.GOOD.getCode();
     }
 
     public static int playerLeave(Game game, Player player, EscapaBestia plugin, boolean finishingGame, boolean closingServer) {
@@ -185,14 +191,18 @@ public class GameManager
                 //finishGame(game, plugin);
             //}
         }
-        return 0; //No hubo ningún fallo
+        return ErrorCodes.GOOD.getCode();
     }
 
     @SuppressWarnings("unlikely-arg-type")
     public static void startGame(Game game) {
         game.setState(GameState.PLAYING);
         game.determineBestia();
-        teleportPlayers(game);
+        for(EscapaBestiaPlayer p : game.getPlayers())
+        {
+            p.getPlayer().sendMessage(Integer.toString(teleportPlayers(game)));
+        }
+
         ArrayList<EscapaBestiaPlayer> players = (ArrayList<EscapaBestiaPlayer>) game.getPlayers();
         for(EscapaBestiaPlayer p : players) {
             FileConfiguration messages = plugin.getMessages();
@@ -204,7 +214,12 @@ public class GameManager
         cooldown.cooldownGame(game, plugin);
     }
 
-    private static void teleportPlayers(Game game) {
+    private static int teleportPlayers(Game game) {
+        if(game.getBestiaSpawn() == null)
+            return ErrorCodes.NO_BESTIA_SPAWN.getCode();
+        else if(game.getBestiaSpawn() == null)
+            return ErrorCodes.NO_PLAYERS_SPAWN.getCode();
+
         ArrayList<EscapaBestiaPlayer> players = (ArrayList<EscapaBestiaPlayer>) game.getPlayers();
         for(EscapaBestiaPlayer p : players) {
             if(p.isBestia())
@@ -212,16 +227,17 @@ public class GameManager
                 Player bestia = p.getPlayer();
                 bestia.sendMessage("teletransportando al spawn de bestias");
                 bestia.teleport(game.getBestiaSpawn());
-                return;
+                return ErrorCodes.GOOD.getCode();
             }
             else
             {
                 Player player = p.getPlayer();
                 player.sendMessage("teletransportando al spawn de jugadores");
                 player.teleport(game.getPlayersSpawn());
-                return;
+                return ErrorCodes.GOOD.getCode();
             }
         }
+        return ErrorCodes.UNKNOWN_ERROR.getCode();
     }
 
     @SuppressWarnings("unused")

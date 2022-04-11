@@ -4,6 +4,7 @@ import com.vexmi.escapadelabestia.EscapaBestia;
 import com.vexmi.escapadelabestia.classes.Game;
 import com.vexmi.escapadelabestia.classes.GameState;
 import com.vexmi.escapadelabestia.classes.InvOwner;
+import com.vexmi.escapadelabestia.utils.ErrorCodes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -32,7 +33,7 @@ public class InvManager
     {
         if(plugin == null)
         {
-            return 4; //Error desconocido
+            return ErrorCodes.UNKNOWN_ERROR.getCode();
         }
         FileConfiguration config = plugin.getConfig();
         String invName = config.getString("Config.joinGamesInv.name");
@@ -41,7 +42,7 @@ public class InvManager
         int fillGlassDatatag = config.getInt("Config.joinGamesInv.fill-glass.datatag");
         if(Material.getMaterial(fillGlassM) == null)
         {
-            return 3; //El Material del inventario no fue encontrado.
+            return ErrorCodes.MATERIAL_NOT_FOUND.getCode();
         }
         InvOwner holder = new InvOwner(null);
         Inventory joinGamesInv = Bukkit.createInventory(holder, 54, ChatColor.translateAlternateColorCodes('&', invName));
@@ -104,10 +105,11 @@ public class InvManager
             stack.setItemMeta(stackMeta);
 
             joinGamesInv.setItem(pos, state.getItem());
+            pos++;
         }
 
         player.openInventory(joinGamesInv);
 
-        return 0; //Todo fue bien uwu
+        return ErrorCodes.GOOD.getCode();
     }
 }
