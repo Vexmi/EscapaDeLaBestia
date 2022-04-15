@@ -120,6 +120,21 @@ public class AdminCmd
             }
             return changeName(game, player, plugin, args[3]);
         }
+        else if(args[1].equalsIgnoreCase("forcestop"))
+        {
+            if(!(args.length >= 4))
+            {
+                player.sendMessage("Tienes que poner la partida._.");
+                return true;
+            }
+            Game game = gameM.getGame(args[2]);
+            if(game == null)
+            {
+                player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
+                return true;
+            }
+            return forceStopGame(game, player, plugin);
+        }
         return true;
     }
 
@@ -167,5 +182,17 @@ public class AdminCmd
         game.setName(newName);
         player.sendMessage(plugin.colorText("&2Nombre de la partida &a" + oldName + "&2 cambiado a &a" + newName));
         return true;
+    }
+
+    private boolean forceStopGame(Game game, Player player, EscapaBestia plugin)
+    {
+        if(game.isPlaying())
+        {
+            GameManager gameM = new GameManager(plugin);
+            gameM.finishGame(game, plugin, false);
+            player.sendMessage("Juego parado con exito.");
+            return true;
+        }
+        return false;
     }
 }

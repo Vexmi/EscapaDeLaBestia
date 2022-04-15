@@ -22,13 +22,15 @@ public class CooldownManager {
     }
 
     public void cooldownStartGame(Game game, EscapaBestia plugin) {
+        game.setState(GameState.STARTING);
         this.time = 10;
         FileConfiguration messages = plugin.getMessages();
+        String path = messages.getString("Messages.GameStartCooldown");
+        String timePath = String.valueOf(this.time);
         ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-        for(int i=0;i<players.size();i++) {
-            String path = messages.getString("Messages.GameStartCooldown");
-            String timePath = String.valueOf(this.time);
-            players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", timePath));
+        for(EscapaBestiaPlayer player : players) {
+            player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", timePath));
+            player.getPlayer().sendMessage(game.getState().getName());
         }
 
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
@@ -64,13 +66,13 @@ public class CooldownManager {
                 return true;
             }
         }else {
-            //FileConfiguration messages = plugin.getMessages();
-            //FileConfiguration config = plugin.getConfig();
-            //ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-            //for(int i=0;i<players.size();i++) {
-                //String path = messages.getString("Messages.NotEnoughPlayers");
-                //players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path));
-            //}
+            FileConfiguration messages = plugin.getMessages();
+            FileConfiguration config = plugin.getConfig();
+            ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
+            for(int i=0;i<players.size();i++) {
+                String path = messages.getString("Messages.NotEnoughPlayers");
+                players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path));
+            }
             return false;
         }
     }

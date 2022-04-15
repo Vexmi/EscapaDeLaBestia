@@ -36,21 +36,15 @@ public enum ErrorCodes
     public ErrorCodes getByCode(int code)
     {
         for(ErrorCodes foundcode : values())
-        {
-            if(foundcode.getCode() == code)
-            {
+            if (foundcode.getCode() == code)
                 return foundcode;
-            }
-        }
+
         return null;
     }
 
     static
     {
         for(ErrorCodes errorCodes : values())
-        {
             META_LOOKUP[errorCodes.getCode()] = errorCodes;
-        }
     }
-
 }

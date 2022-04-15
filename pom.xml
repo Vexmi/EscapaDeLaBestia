@@ -113,7 +113,7 @@
                         <artifactId>maven-jar-plugin</artifactId>
                         <version>2.3.1</version>
                         <configuration>
-                            <outputDirectory>libs/dev</outputDirectory>
+                            <outputDirectory>C:\Users\Adrigamer2950\Desktop\Vexmi Testing\plugins</outputDirectory>
                             <finalName>DEV-${project.artifactId}-${project.version}</finalName>
                         </configuration>
                     </plugin>

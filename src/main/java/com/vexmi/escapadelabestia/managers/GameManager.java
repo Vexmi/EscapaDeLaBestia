@@ -24,23 +24,23 @@ public class GameManager
 
     public void addGame(Game game)
     {
-        EscapaBestia.games.add(game);
+        plugin.games.add(game);
     }
 
     public void removeGame(String name)
     {
-        for(Game game : EscapaBestia.games)
+        for(Game game : plugin.games)
         {
             if(game.getName().equals(name))
             {
-                EscapaBestia.games.remove(game);
+                plugin.games.remove(game);
             }
         }
     }
 
     public Game getGame(String name)
     {
-        for(Game game : EscapaBestia.games)
+        for(Game game : plugin.games)
         {
             if(game.getName().equals(name))
             {
@@ -52,12 +52,12 @@ public class GameManager
 
     public static ArrayList<Game> getGames()
     {
-        return EscapaBestia.games;
+        return plugin.games;
     }
 
     public Game getPlayerGame(String playerName)
     {
-        for(Game game : EscapaBestia.games)
+        for(Game game : plugin.games)
         {
             ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
             for(EscapaBestiaPlayer player : players)
@@ -120,8 +120,9 @@ public class GameManager
         else
             player.teleport(game.getLobby());
 
-        if(game.getActualPlayers() >= game.getMinPlayers() && game.getState().equals(GameState.WAITING) || game.getState().equals(GameState.STARTING)) {
+        if(game.getActualPlayers() >= game.getMinPlayers() && game.getState().equals(GameState.WAITING)) {
             //cooldown
+            player.sendMessage(game.getState().getName());
             cooldownM.cooldownStartGame(game, plugin);
         }
         return ErrorCodes.GOOD.getCode();
@@ -154,22 +155,22 @@ public class GameManager
             }
         }
 
-        FileConfiguration mainlobby = plugin.getMainLobby();
-        World world = null;
-        if(Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
-        {
-            return 1; //El mundo no fue encontrado
-        }
-        else
-            world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
+        //FileConfiguration mainlobby = plugin.getMainLobby();
+        //World world = null;
+        //if(Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
+        //{
+            //return 1; //El mundo no fue encontrado
+        //}
+        //else
+            //world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
 
-        double x = Double.valueOf(mainlobby.getString("MainLobby.x"));
-        double y = Double.valueOf(mainlobby.getString("MainLobby.y"));
-        double z = Double.valueOf(mainlobby.getString("MainLobby.z"));
-        float yaw = Float.valueOf(mainlobby.getString("MainLobby.yaw"));
-        float pitch = Float.valueOf(mainlobby.getString("MainLobby.pitch"));
-        Location l = new Location(world, x, y, z, yaw, pitch);
-        player.teleport(l);
+        //double x = Double.valueOf(mainlobby.getString("MainLobby.x"));
+        //double y = Double.valueOf(mainlobby.getString("MainLobby.y"));
+        //double z = Double.valueOf(mainlobby.getString("MainLobby.z"));
+        //float yaw = Float.valueOf(mainlobby.getString("MainLobby.yaw"));
+        //float pitch = Float.valueOf(mainlobby.getString("MainLobby.pitch"));
+        //Location l = new Location(world, x, y, z, yaw, pitch);
+        //player.teleport(l);
 
         player.getInventory().setContents(savedInventory);
         player.getInventory().setArmorContents(savedEquipment);
@@ -217,11 +218,12 @@ public class GameManager
     private static int teleportPlayers(Game game) {
         if(game.getBestiaSpawn() == null)
             return ErrorCodes.NO_BESTIA_SPAWN.getCode();
-        else if(game.getBestiaSpawn() == null)
+        else if(game.getPlayersSpawn() == null)
             return ErrorCodes.NO_PLAYERS_SPAWN.getCode();
 
         ArrayList<EscapaBestiaPlayer> players = (ArrayList<EscapaBestiaPlayer>) game.getPlayers();
-        for(EscapaBestiaPlayer p : players) {
+        for(EscapaBestiaPlayer p : players)
+        {
             if(p.isBestia())
             {
                 Player bestia = p.getPlayer();
@@ -240,14 +242,27 @@ public class GameManager
         return ErrorCodes.UNKNOWN_ERROR.getCode();
     }
 
-    @SuppressWarnings("unused")
     public static void finishGame(Game game, EscapaBestia plugin, boolean bestiaWin)
     {
         game.setState(GameState.FINISHING);
         game.setGameFinishing(true);
         if(bestiaWin)
         {
-
+            for(EscapaBestiaPlayer player : game.getPlayers())
+            {
+                player.getPlayer().sendMessage("La bestia gano");
+            }
+        }
+        else
+        {
+            for(EscapaBestiaPlayer player : game.getPlayers())
+            {
+                player.getPlayer().sendMessage("Los jugadores ganaron");
+            }
+        }
+        for(EscapaBestiaPlayer p : game.getPlayers())
+        {
+            game.getPlayers().remove(p);
         }
     }
 }

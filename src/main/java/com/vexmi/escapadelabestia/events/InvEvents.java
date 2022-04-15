@@ -74,7 +74,8 @@ public class InvEvents implements Listener
                                     {
                                         player.sendMessage("5");
                                     }
-                                }else
+                                }
+                                else
                                 {
                                     player.sendMessage("4");
                                 }

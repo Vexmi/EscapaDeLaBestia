@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 /*
  * Plugin de Escapa de La Bestia para Vexmi MC
+ * Started 24/03/2022
  * @author Adrigamer2950
  */
 public class EscapaBestia extends JavaPlugin
@@ -33,7 +34,7 @@ public class EscapaBestia extends JavaPlugin
     private File gamesFile = null;
     private FileConfiguration mainlobby = null;
     private File mainlobbyFile = null;
-    public static ArrayList<Game> games;
+    public ArrayList<Game> games;
     public GameManager gameM = new GameManager(this);
 
     public String colorText(String text)
@@ -45,12 +46,12 @@ public class EscapaBestia extends JavaPlugin
     public void onEnable()
     {
         games = new ArrayList<Game>();
-        registerEvents();
-        registerCommands();
         registerConfig();
         registerMessages();
-        registerMainLobby();
+        //registerMainLobby();
         registerGames();
+        registerEvents();
+        registerCommands();
         loadGames();
 
         Bukkit.getConsoleSender().sendMessage(colorText(name + " &2Plugin Enabled Successfully"));
@@ -59,15 +60,15 @@ public class EscapaBestia extends JavaPlugin
     @Override
     public void onDisable()
     {
-        Bukkit.getConsoleSender().sendMessage(colorText(name + " &4Plugin Disabled Successfully"));
         saveGames();
-        saveMainLobby();
+        //saveMainLobby();
+        Bukkit.getConsoleSender().sendMessage(colorText(name + " &4Plugin Disabled Successfully"));
     }
 
     public void saveGames() {
         FileConfiguration games = getGamesFile();
         games.set("Games", null);
-        for(Game g : EscapaBestia.games) {
+        for(Game g : this.games) {
             String name = g.getName();
             games.set("Games."+name+".min_players", g.getMinPlayers());
             games.set("Games."+name+".max_players", g.getMaxPlayers());
@@ -182,7 +183,7 @@ public class EscapaBestia extends JavaPlugin
         getCommand("edlb").setExecutor(new EBCmd(this));
     }
 
-    public void registerConfig()
+    private void registerConfig()
     {
         File config = new File(this.getDataFolder(),"config.yml");
         if(!config.exists()){
@@ -225,7 +226,7 @@ public class EscapaBestia extends JavaPlugin
         }
     }
 
-    public void registerMessages(){
+    private void registerMessages(){
         messagesFile = new File(this.getDataFolder(),"messages.yml");
         if(!messagesFile.exists()){
             this.getMessages().options().copyDefaults(true);
@@ -265,7 +266,7 @@ public class EscapaBestia extends JavaPlugin
         }
     }
 
-    public void registerGames(){
+    private void registerGames(){
         gamesFile = new File(this.getDataFolder(),"games.yml");
         if(!gamesFile.exists()){
             this.getGamesFile().options().copyDefaults(true);
@@ -305,7 +306,7 @@ public class EscapaBestia extends JavaPlugin
         }
     }
 
-    public void registerMainLobby(){
+    private void registerMainLobby(){
         mainlobbyFile = new File(this.getDataFolder(),"mainlobby.yml");
         if(!mainlobbyFile.exists()){
             this.getMainLobby().options().copyDefaults(true);
