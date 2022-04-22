@@ -30,6 +30,7 @@ Messages:
   PlayerJoinGame: "&6%player% entro a la partida. &b(&a%actualplayers%&b/&a%maxplayers%&b)"
   PlayerLeaveGame: "&6%player% salió de la partida. &b(&a%actualplayers%&b/&a%maxplayers%&b)"
   GameStartCooldown: "&aEl juego empezará en: &6%time% &asegundos!"
+  GameFinishCooldown: "&aTenéis &6%time% &asegundos para matar a la bestia o perderéis!"
   NotEnoughPlayers: "&cThere are not enough players to start the game!"
   StartGame: "&aLa partida ha empezado! La bestia será liberada en 10 segundos!"
   BestiaWin: "&cGana la bestia!"

@@ -114,7 +114,7 @@
                         <version>2.3.1</version>
                         <configuration>
                             <outputDirectory>C:\Users\Adrigamer2950\Desktop\Vexmi Testing\plugins</outputDirectory>
-                            <finalName>DEV-${project.artifactId}-${project.version}</finalName>
+                            <finalName>DEVBUILD-${project.artifactId}-${project.version}</finalName>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -139,18 +139,9 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-        <repository>
-            <id>spigot-vault-api</id>
-            <url>https://ci.ender.zone/plugin/repository/everything/</url>
-        </repository>
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>net.milkbowl.vault</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
@@ -171,7 +162,7 @@
             <name>Adrigamer</name>
             <email>adrigamer2950@gmail.com</email>
             <url>https://github.com/adrigamer2950</url>
-            <organization>ADC Team, Vexmi MC</organization>
+            <organization>ADC Team, Vexmi</organization>
             <roles>
                 <role>Developer</role>
             </roles>
@@ -182,9 +173,11 @@
         <developer>
             <id>SrBigos</id>
             <name>Bigos</name>
-            <organization>Vexmi MC</organization>
+            <email>srbigoscraft@gmail.com</email>
+            <url>https://github.com/SrBigos</url>
+            <organization>Vexmi</organization>
             <roles>
-                <role>Vexmi MC Owner</role>
+                <role>Vexmi Owner</role>
             </roles>
         </developer>
     </developers>

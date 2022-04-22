@@ -50,16 +50,15 @@ public class CooldownManager {
             if(time <= 5 && time > 0) {
                 FileConfiguration messages = plugin.getMessages();
                 ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-                for(int i=0;i<players.size();i++) {
+                for (EscapaBestiaPlayer player : players) {
                     String path = messages.getString("Messages.GameStartCooldown");
-                    String timePath = String.valueOf(this.time);
-                    players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", timePath));
+                    player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", String.valueOf(this.time)));
                 }
                 game.decreaseTime();
                 time--;
                 return true;
             }else if(time <= 0) {
-                GameManager.startGame(game);
+                new GameManager(plugin, plugin).startGame(game);
                 return false;
             }else {
                 time--;
@@ -69,9 +68,9 @@ public class CooldownManager {
             FileConfiguration messages = plugin.getMessages();
             FileConfiguration config = plugin.getConfig();
             ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-            for(int i=0;i<players.size();i++) {
+            for (EscapaBestiaPlayer player : players) {
                 String path = messages.getString("Messages.NotEnoughPlayers");
-                players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path));
+                player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path));
             }
             return false;
         }
@@ -82,10 +81,9 @@ public class CooldownManager {
         game.setTime(this.time);
         FileConfiguration messages = plugin.getMessages();
         ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-        for(int i=0;i<players.size();i++) {
-            String path = messages.getString("Messages.GameStartCooldown");
-            String timePath = String.valueOf(this.time);
-            players.get(i).getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", timePath));
+        for (EscapaBestiaPlayer player : players) {
+            String path = messages.getString("Messages.GameFinishCooldown");
+            player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', path).replaceAll("%time%", String.valueOf(this.time)));
         }
 
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
@@ -93,7 +91,6 @@ public class CooldownManager {
             public void run() {
                 if(!executeGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(taskID);
-                    return;
                 }
             }
         }, 0L, 20L);

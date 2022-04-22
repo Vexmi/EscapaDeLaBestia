@@ -7,15 +7,15 @@ import java.util.ArrayList;
 public class Game
 {
     private ArrayList<EscapaBestiaPlayer> players = new ArrayList<EscapaBestiaPlayer>();
-    private EscapaBestiaPlayer bestia;
-    private String name;
+    private EscapaBestiaPlayer bestia = null;
+    private String name = null;
     private int minPlayers;
     private int maxPlayers;
     private int actualPlayers;
-    private GameState state;
-    private Location lobby;
-    private Location bestiaSpawn;
-    private Location playersSpawn;
+    private GameState state = null;
+    private Location lobby = null;
+    private Location bestiaSpawn = null;
+    private Location playersSpawn = null;
     private int time;
     private int maxTime;
     private boolean isGameFinishing;
@@ -49,12 +49,12 @@ public class Game
 
     public Location getBestiaSpawn()
     {
-        return bestiaSpawn;
+        return this.bestiaSpawn;
     }
 
     public Location getPlayersSpawn()
     {
-        return playersSpawn;
+        return this.playersSpawn;
     }
 
     public void setBestiaSpawn(Location bestiaSpawn)

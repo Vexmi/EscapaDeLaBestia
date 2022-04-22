@@ -17,7 +17,7 @@ public class GameEvents implements Listener
     {
         this.plugin = plugin;
     }
-    private GameManager gameM = new GameManager(plugin);
+    private GameManager gameM = new GameManager(plugin, plugin);
 
     @EventHandler()
     public void onEntityDamage(EntityDamageByEntityEvent e)
@@ -28,9 +28,9 @@ public class GameEvents implements Listener
         {
             Player player = (Player) entity;
             Player damagedPlayer = (Player) damagedEntity;
-            if(gameM.getPlayerGame(player.getName()) != null)
+            if(plugin.getPlayerGame(player.getName()) != null)
             {
-                Game game = gameM.getPlayerGame(player.getName());
+                Game game = plugin.getPlayerGame(player.getName());
                 if(game.isGameFinishing())
                 {
                     e.setCancelled(true);

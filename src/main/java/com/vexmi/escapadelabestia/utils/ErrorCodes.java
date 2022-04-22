@@ -1,7 +1,5 @@
 package com.vexmi.escapadelabestia.utils;
 
-import com.vexmi.escapadelabestia.classes.GameState;
-
 public enum ErrorCodes
 {
     GOOD("GOOD", 0),

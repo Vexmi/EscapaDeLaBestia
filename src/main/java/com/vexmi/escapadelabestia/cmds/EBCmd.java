@@ -23,7 +23,7 @@ public class EBCmd implements CommandExecutor
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
-        GameManager gameM = new GameManager(plugin);
+        GameManager gameM = new GameManager(plugin, plugin);
         AdminCmd adminCmd = new AdminCmd();
         InvManager invM = new InvManager(plugin);
 
@@ -45,7 +45,7 @@ public class EBCmd implements CommandExecutor
                 EscapaBestiaPlayer eplayer = new EscapaBestiaPlayer(player);
                 Bukkit.getConsoleSender().sendMessage(plugin.colorText(eplayer.getName()));
                 Game game = new Game(args[1], 1, 10);
-                gameM.addGame(game);
+                plugin.addGame(game);
             }
             else if (args[0].equalsIgnoreCase("join"))
             {
@@ -56,13 +56,12 @@ public class EBCmd implements CommandExecutor
                 }
                 else
                 {
-                    Game game = gameM.getGame(args[1]);
-                    player.sendMessage(game.getName());
+                    Game game = plugin.getGame(args[1]);
                     if(game != null)
                     {
                         if(game.isEnabled())
                         {
-                            if(gameM.getPlayerGame(player.getName()) == null)
+                            if(plugin.getPlayerGame(player.getName()) == null)
                             {
                                 if(!game.isPlaying())
                                 {

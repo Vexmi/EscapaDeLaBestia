@@ -2,10 +2,8 @@ name: '${project.name}'
 version: '${project.version}'
 main: com.vexmi.escapadelabestia.EscapaBestia
 load: POSTWORLD
-authors: [ Adrigamer2950 ]
+author: Adrigamer2950
 description: '${project.description}'
-softdepend:
-  - Multiverse-Core
 
 commands:
   edlb:

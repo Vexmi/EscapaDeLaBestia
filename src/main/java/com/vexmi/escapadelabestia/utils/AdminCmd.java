@@ -17,7 +17,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -32,7 +32,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -47,7 +47,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -62,7 +62,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida y el número de jugadores mínimo ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -87,7 +87,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida y el número de jugadores máximo ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -112,7 +112,7 @@ public class AdminCmd
                 player.sendMessage("Tienes que poner la partida y el nuevo nombre ._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -122,12 +122,12 @@ public class AdminCmd
         }
         else if(args[1].equalsIgnoreCase("forcestop"))
         {
-            if(!(args.length >= 4))
+            if(!(args.length >= 3))
             {
                 player.sendMessage("Tienes que poner la partida._.");
                 return true;
             }
-            Game game = gameM.getGame(args[2]);
+            Game game = plugin.getGame(args[2]);
             if(game == null)
             {
                 player.sendMessage(plugin.colorText("&cEsa partida no existe!"));
@@ -188,8 +188,7 @@ public class AdminCmd
     {
         if(game.isPlaying())
         {
-            GameManager gameM = new GameManager(plugin);
-            gameM.finishGame(game, plugin, false);
+            GameManager.finishGame(game, plugin, true);
             player.sendMessage("Juego parado con exito.");
             return true;
         }

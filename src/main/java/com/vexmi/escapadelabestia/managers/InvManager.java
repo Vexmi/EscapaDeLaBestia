@@ -27,7 +27,7 @@ public class InvManager
     {
         this.plugin = plugin;
     }
-    private GameManager gameM = new GameManager(plugin);
+    private GameManager gameM = new GameManager(plugin, plugin);
 
     public int createJoinGamesInv(Player player, int actualPage)
     {
@@ -77,7 +77,7 @@ public class InvManager
         joinGamesInv.setItem(25, item);
         joinGamesInv.setItem(34, item);
 
-        List<Game> gamesList = (ArrayList<Game>) gameM.getGames();
+        List<Game> gamesList = (ArrayList<Game>) plugin.getGames();
 
         int pos = 0;
         for(Game game : gamesList)
