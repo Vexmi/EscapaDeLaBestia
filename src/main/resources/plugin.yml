@@ -1,9 +1,13 @@
 name: '${project.name}'
 version: '${project.version}'
-main: com.vexmi.escapadelabestia.EscapaBestia
-load: POSTWORLD
-author: Adrigamer2950
 description: '${project.description}'
+main: org.vexmi.escapadelabestia.EscapaBestia
+load: POSTWORLD
+softdepend:
+  - PlaceHolderAPI
+authors:
+  - Adrigamer2950
+  - SrBigos
 
 commands:
   edlb:
@@ -14,3 +18,8 @@ commands:
 permissions:
   edlb.*:
     default: op
+    children:
+      edlb.admin:
+        default: op
+      edlb.default:
+        default: true

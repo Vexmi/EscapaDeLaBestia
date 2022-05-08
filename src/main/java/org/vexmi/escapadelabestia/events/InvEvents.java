@@ -1,9 +1,9 @@
-package com.vexmi.escapadelabestia.events;
+package org.vexmi.escapadelabestia.events;
 
-import com.vexmi.escapadelabestia.EscapaBestia;
-import com.vexmi.escapadelabestia.classes.Game;
-import com.vexmi.escapadelabestia.classes.InvOwner;
-import com.vexmi.escapadelabestia.managers.GameManager;
+import org.vexmi.escapadelabestia.EscapaBestia;
+import org.vexmi.escapadelabestia.classes.Game;
+import org.vexmi.escapadelabestia.classes.InvOwner;
+import org.vexmi.escapadelabestia.managers.GameManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.vexmi.escapadelabestia.utils.ErrorCodes;
 
 public class InvEvents implements Listener {
     private EscapaBestia plugin;
@@ -20,7 +21,7 @@ public class InvEvents implements Listener {
         this.plugin = plugin;
     }
 
-    private GameManager gameM = new GameManager(plugin, plugin);
+    private GameManager gameM = new GameManager(plugin);
 
     @EventHandler
     public void onInvClick(InventoryClickEvent event) {
@@ -34,29 +35,19 @@ public class InvEvents implements Listener {
                 if (event.getCurrentItem() == null || event.getSlotType() == null || event.getCurrentItem().getType() == Material.getMaterial(glassM))
                     return;
                 else {
-                    player.sendMessage("asd2");
                     ItemStack stack = event.getCurrentItem();
                     String gameName = ChatColor.stripColor(stack.getItemMeta().getDisplayName());
-                    player.sendMessage(ChatColor.stripColor(stack.getItemMeta().getDisplayName()));
                     if (plugin.getGame(gameName) != null) {
                         Game game = plugin.getGame(gameName);
-                        if (game.isEnabled()) {
-                            if (plugin.getPlayerGame(player.getName()) == null) {
-                                if (!game.isPlaying()) {
-                                    if (!game.isFull()) {
-                                        if (GameManager.playerJoin(game, player, plugin) == 0) {}
-                                        else if (GameManager.playerJoin(game, player, plugin) == 1)
-                                            player.sendMessage(plugin.colorText("&cError! El mundo de esa partida no existe o no es encontrado."));
-                                        else if (GameManager.playerJoin(game, player, plugin) == 2)
-                                            player.sendMessage(plugin.colorText("&cError! EL lobby de esa partida no existe o no fue encontrado."));
-
-                                    }
-                                }
-                            }
-                        }
+                        if (game.isEnabled())
+                            if (plugin.getPlayerGame(player.getName()) == null)
+                                if (!game.isPlaying())
+                                    if (!game.isFull())
+                                        if(GameManager.playerJoin(game, player, plugin).getCode() != 0)
+                                            player.sendMessage(GameManager.playerJoin(game, player, plugin).getMessage());
                     } else {
                         player.closeInventory();
-                        player.sendMessage("Error!");
+                        player.sendMessage(ErrorCodes.UNKNOWN_ERROR.getMessage());
                     }
                 }
             }

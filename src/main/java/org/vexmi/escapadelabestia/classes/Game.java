@@ -1,14 +1,23 @@
-package com.vexmi.escapadelabestia.classes;
+package org.vexmi.escapadelabestia.classes;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-public class Game
-{
-    private ArrayList<EscapaBestiaPlayer> players = new ArrayList<EscapaBestiaPlayer>();
+public class Game {
+
+    private final ArrayList<EscapaBestiaPlayer> players = new ArrayList<>();
     private EscapaBestiaPlayer bestia = null;
-    private String name = null;
+    private String name;
     private int minPlayers;
     private int maxPlayers;
     private int actualPlayers;
@@ -20,13 +29,11 @@ public class Game
     private int maxTime;
     private boolean isGameFinishing;
 
-    public Game(String name)
-    {
+    public Game(String name) {
         this(name, 1, 8);
     }
 
-    public Game(String name, int minPlayers, int maxPlayers)
-    {
+    public Game(String name, int minPlayers, int maxPlayers) {
         this.name = name;
         this.setMinPlayers(minPlayers);
         this.setMaxPlayers(maxPlayers);
@@ -37,71 +44,82 @@ public class Game
         this.isGameFinishing = false;
     }
 
-    public boolean isGameFinishing()
-    {
+    public PlayerInventory getBestiaInv() {
+        PlayerInventory inv = (PlayerInventory) Bukkit.createInventory(new InvOwner(null), InventoryType.PLAYER);
+
+        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD, 1, (short) 0);
+        ItemStack bow = new ItemStack(Material.BOW, 1, (short) 0);
+
+        ItemStack helmet = new ItemStack(Material.DIAMOND_HELMET, 1, (short) 0);
+        ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1, (short) 0);
+        ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS, 1, (short) 0);
+        ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS, 1, (short) 0);
+
+        inv.setItem(0, sword);
+        inv.setItem(1, bow);
+        inv.setItem(103, helmet);
+        inv.setItem(102, chestplate);
+        inv.setItem(101, leggings);
+        inv.setItem(100, boots);
+
+        return inv;
+    }
+
+    public boolean isGameFinishing() {
         return isGameFinishing;
     }
 
-    public void setGameFinishing(boolean isGameFinishing)
-    {
+    public void setGameFinishing(boolean isGameFinishing) {
         this.isGameFinishing = isGameFinishing;
     }
 
-    public Location getBestiaSpawn()
-    {
+    @Nullable
+    public Location getBestiaSpawn() {
         return this.bestiaSpawn;
     }
 
-    public Location getPlayersSpawn()
-    {
+    @Nullable
+    public Location getPlayersSpawn() {
         return this.playersSpawn;
     }
 
-    public void setBestiaSpawn(Location bestiaSpawn)
-    {
+    public void setBestiaSpawn(@NotNull Location bestiaSpawn) {
         this.bestiaSpawn = bestiaSpawn;
     }
 
-    public void setPlayersSpawn(Location playersSpawn)
-    {
+    public void setPlayersSpawn(@NotNull Location playersSpawn) {
         this.playersSpawn = playersSpawn;
     }
 
-    public ArrayList<EscapaBestiaPlayer> getPlayers()
-    {
+    @NotNull
+    public ArrayList<EscapaBestiaPlayer> getPlayers() {
         return players;
     }
 
-    public EscapaBestiaPlayer getPlayer(String player) {
+    @Nullable
+    public EscapaBestiaPlayer getPlayer(@NotNull String player) {
         ArrayList<EscapaBestiaPlayer> players = getPlayers();
-        for(EscapaBestiaPlayer p : players) {
-            if(p.getPlayer().getName().equals(player)){
+        for (EscapaBestiaPlayer p : players) {
+            if (p.getPlayer().getName().equals(player)) {
                 return p;
             }
         }
         return null;
     }
 
-    public boolean addPlayer(EscapaBestiaPlayer player)
-    {
-        for(EscapaBestiaPlayer p : players)
-        {
+    public boolean addPlayer(@NotNull EscapaBestiaPlayer player) {
+        for (EscapaBestiaPlayer p : players) {
             if (p.getName().equals(player.getName()))
-            {
                 return false;
-            }
         }
         players.add(player);
         this.setActualPlayers((this.getActualPlayers() == this.getMaxPlayers()) ? this.getActualPlayers() : this.getActualPlayers() + 1);
         return true;
     }
 
-    public boolean removePlayer(EscapaBestiaPlayer player)
-    {
-        for(EscapaBestiaPlayer p : players)
-        {
-            if(p.equals(player))
-            {
+    public boolean removePlayer(@NotNull EscapaBestiaPlayer player) {
+        for (EscapaBestiaPlayer p : players) {
+            if (p.equals(player)) {
                 return false;
             }
         }
@@ -110,12 +128,9 @@ public class Game
         return true;
     }
 
-    public boolean removePlayer(String player)
-    {
-        for(EscapaBestiaPlayer p : players)
-        {
-            if(p.getName().equals(player))
-            {
+    public boolean removePlayer(@NotNull String player) {
+        for (EscapaBestiaPlayer p : players) {
+            if (p.getName().equals(player)) {
                 players.remove(p);
                 this.setActualPlayers((this.getActualPlayers() == 0) ? this.getActualPlayers() : this.getActualPlayers() - 1);
                 return true;
@@ -124,16 +139,15 @@ public class Game
         return false;
     }
 
-    public EscapaBestiaPlayer determineBestia()
-    {
-        int random = (int)(Math.random() * players.size());
+    public void determineBestia() {
+        int random = (int) (Math.random() * players.size());
         EscapaBestiaPlayer bestia = players.get(random);
+        bestia.setBestia(true);
         this.bestia = bestia;
-        return bestia;
     }
 
-    public EscapaBestiaPlayer getBestia()
-    {
+    @Nullable
+    public EscapaBestiaPlayer getBestia() {
         return bestia;
     }
 
@@ -165,8 +179,7 @@ public class Game
         return this.name;
     }
 
-    public void setName(String newName)
-    {
+    public void setName(String newName) {
         this.name = newName;
     }
 
@@ -194,43 +207,37 @@ public class Game
         this.actualPlayers = actualPlayers;
     }
 
+    @Nullable
     public GameState getState() {
         return state;
     }
 
-    public void setState(GameState state) {
+    public void setState(@NotNull GameState state) {
         this.state = state;
     }
 
     public boolean isPlaying() {
-        if(state.equals(GameState.WAITING) || state.equals(GameState.DISABLED) || state.equals(GameState.STARTING)) {
+        if (state.equals(GameState.WAITING) || state.equals(GameState.DISABLED) || state.equals(GameState.STARTING)) {
             return false;
-        }else {
+        } else {
             return true;
         }
     }
 
     public boolean isFull() {
-        if(this.actualPlayers == this.maxPlayers) {
-            return true;
-        }else {
-            return false;
-        }
+        return (this.actualPlayers == this.maxPlayers);
     }
 
     public boolean isEnabled() {
-        if(!state.equals(GameState.DISABLED)) {
-            return true;
-        }else {
-            return false;
-        }
+        return !state.equals(GameState.DISABLED);
     }
 
+    @Nullable
     public Location getLobby() {
         return this.lobby;
     }
 
-    public void setLobby(Location lobby) {
+    public void setLobby(@NotNull Location lobby) {
         this.lobby = lobby;
     }
 }

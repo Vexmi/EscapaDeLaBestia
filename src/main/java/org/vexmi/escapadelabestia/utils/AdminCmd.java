@@ -1,8 +1,8 @@
-package com.vexmi.escapadelabestia.utils;
+package org.vexmi.escapadelabestia.utils;
 
-import com.vexmi.escapadelabestia.EscapaBestia;
-import com.vexmi.escapadelabestia.classes.Game;
-import com.vexmi.escapadelabestia.managers.GameManager;
+import org.vexmi.escapadelabestia.EscapaBestia;
+import org.vexmi.escapadelabestia.classes.Game;
+import org.vexmi.escapadelabestia.managers.GameManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -150,7 +150,7 @@ public class AdminCmd
     {
         Location l = player.getLocation();
         game.setPlayersSpawn(l);
-        player.sendMessage("Lobby establecido");
+        player.sendMessage("Spawn de jugadores establecido");
         return true;
     }
 
@@ -158,7 +158,7 @@ public class AdminCmd
     {
         Location l = player.getLocation();
         game.setBestiaSpawn(l);
-        player.sendMessage("Lobby establecido");
+        player.sendMessage("Spawn de bestia establecido");
         return true;
     }
 

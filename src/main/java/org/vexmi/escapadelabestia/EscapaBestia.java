@@ -1,20 +1,29 @@
-package com.vexmi.escapadelabestia;
+package org.vexmi.escapadelabestia;
 
-import com.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
-import com.vexmi.escapadelabestia.classes.Game;
-import com.vexmi.escapadelabestia.classes.GameState;
-import com.vexmi.escapadelabestia.cmds.EBCmd;
-import com.vexmi.escapadelabestia.events.InvEvents;
-import com.vexmi.escapadelabestia.exceptions.testException;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
+import org.vexmi.escapadelabestia.classes.Game;
+import org.vexmi.escapadelabestia.classes.GameState;
+import org.vexmi.escapadelabestia.cmds.EBCmd;
+import org.vexmi.escapadelabestia.events.GameEvents;
+import org.vexmi.escapadelabestia.events.InvEvents;
+import org.vexmi.escapadelabestia.utils.Config;
+import org.vexmi.escapadelabestia.utils.Messages;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,9 +38,9 @@ import java.util.logging.Level;
  * @since 1.0.0-devbuild
  */
 public class EscapaBestia extends JavaPlugin {
-    PluginDescriptionFile pdffile = getDescription();
-    public String version = pdffile.getVersion();
-    public String name = ChatColor.RED + "[" + ChatColor.GREEN + pdffile.getName() + ChatColor.BLUE + "]";
+
+    public static PluginManager pm = Bukkit.getServer().getPluginManager();
+
     private FileConfiguration messages = null;
     private File messagesFile = null;
     private FileConfiguration fileGames = null;
@@ -40,20 +49,30 @@ public class EscapaBestia extends JavaPlugin {
     private File mainlobbyFile = null;
     public ArrayList<Game> games;
 
+    private static EscapaBestia plugin;
+
+    public static ProtocolManager manager = ProtocolLibrary.getProtocolManager();
+
     public String colorText(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
     @Override
     public void onEnable() {
+        plugin = this;
         games = new ArrayList<Game>();
         registerConfig();
+        Config.init(this);
         registerMessages();
+        Messages.init(this);
         //registerMainLobby();
         registerGames();
         registerEvents();
         registerCommands();
         loadGames();
+
+        if (pm.getPlugin("PlaceholderAPI") != null)
+            new PlaceHolderAPIExpansion(this).register();
 
         log(Level.INFO, colorText("Plugin Enabled Successfully"));
     }
@@ -65,8 +84,8 @@ public class EscapaBestia extends JavaPlugin {
         log(Level.INFO, colorText("&4Plugin Disabled Successfully"));
     }
 
-    public void log(Level level, String msg) {
-        getLogger().log(level, msg);
+    public void log(Level level, Object msg) {
+        getLogger().log(level, String.valueOf(msg));
     }
 
     public void logException(Level level, String msg, Exception ex) {
@@ -111,7 +130,7 @@ public class EscapaBestia extends JavaPlugin {
                 games.set("Games." + name + ".players.pitch", lSpawnPlayers.getPitch());
             }
 
-            if(g.getState().equals(GameState.DISABLED))
+            if (g.getState().equals(GameState.DISABLED))
                 games.set("Games." + name + ".enabled", false);
             else
                 games.set("Games." + name + ".enabled", true);
@@ -119,7 +138,6 @@ public class EscapaBestia extends JavaPlugin {
         saveGamesFile();
     }
 
-    @SuppressWarnings("unlikely-arg-type")
     public void loadGames() {
         FileConfiguration gamesC = getGamesFile();
         if (gamesC.contains("Games")) {
@@ -219,10 +237,14 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     public Game getPlayerGame(String playerName) {
+        log(Level.INFO, 1);
         for (Game game : this.games) {
+            log(Level.INFO, 2);
             ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
             for (EscapaBestiaPlayer player : players) {
-                if (player.getName().equals(player)) {
+                log(Level.INFO, 3);
+                if (player.getPlayer().getName().equals(playerName)) {
+                    log(Level.INFO, 4);
                     return game;
                 }
             }
@@ -233,6 +255,7 @@ public class EscapaBestia extends JavaPlugin {
     private void registerEvents() {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new InvEvents(this), this);
+        pm.registerEvents(new GameEvents(this), this);
     }
 
     private void registerCommands() {

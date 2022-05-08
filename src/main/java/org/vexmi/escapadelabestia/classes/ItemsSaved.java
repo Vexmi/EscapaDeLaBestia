@@ -1,4 +1,4 @@
-package com.vexmi.escapadelabestia.classes;
+package org.vexmi.escapadelabestia.classes;
 
 import org.bukkit.GameMode;
 import org.bukkit.inventory.ItemStack;

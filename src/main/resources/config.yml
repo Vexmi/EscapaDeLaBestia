@@ -1,5 +1,4 @@
 Config:
-  prefix: "&1[&3EscapaDeLaBestia&1]"
   onWinCmds:
     - 'minecraft:say hola que tal'
   joinGamesInv:
