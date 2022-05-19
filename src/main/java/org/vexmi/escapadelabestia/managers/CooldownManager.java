@@ -1,21 +1,22 @@
 package org.vexmi.escapadelabestia.managers;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.NotNull;
 import org.vexmi.escapadelabestia.EscapaBestia;
 import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import org.vexmi.escapadelabestia.classes.Game;
 import org.vexmi.escapadelabestia.classes.GameState;
 import org.vexmi.escapadelabestia.utils.Messages;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.jetbrains.annotations.NotNull;
 import xyz.xenondevs.particle.ParticleBuilder;
 import xyz.xenondevs.particle.ParticleEffect;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CooldownManager {
 
@@ -40,7 +41,7 @@ public class CooldownManager {
         }
 
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        startTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
+        startTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new BukkitRunnable() {
             public void run() {
                 if (!executeStartGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(startTaskID);
@@ -56,8 +57,8 @@ public class CooldownManager {
                 ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
                 for (EscapaBestiaPlayer player : players) {
                     player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.GameStartCooldown).replaceAll("%time%", String.valueOf(this.time)));
+                    player.getPlayer().sendTitle(String.valueOf(this.time), "");
                 }
-                game.decreaseTime();
                 time--;
                 return true;
             } else if (time <= 0) {
@@ -77,23 +78,17 @@ public class CooldownManager {
         }
     }
 
-    public void cooldownGame(Game game, EscapaBestia plugin) {
+    void cooldownGame(Game game, EscapaBestia plugin) {
         this.time = game.getMaxTime();
         this.bestiaTime = 10;
+
         game.setTime(this.time);
 
-//        Effect effect = new BleedEffect(EscapaBestia.em);
-//        assert game.getBestia() != null;
-//        effect.setEntity(game.getBestia().getPlayer());
-//        Location l = game.getBestia().getPlayer().getLocation().clone();
-//        l.setY(l.getY() + 2);
-//        effect.setLocation(l);
-//        effect.start();
-
-        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        particleTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        particleTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new BukkitRunnable() {
             @Override
             public void run() {
+                assert game.getBestia() != null;
                 Location l = game.getBestia().getPlayer().getLocation().clone();
                 l.setY(l.getY() + 2.5D);
                 new ParticleBuilder(ParticleEffect.FLAME, l)
@@ -102,41 +97,32 @@ public class CooldownManager {
                         .display();
             }
         }, 0L, 5L);
-        gameTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
+        gameTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new BukkitRunnable() {
             public void run() {
                 if (!executeGame(game, plugin)) {
-                    Bukkit.getScheduler().cancelTask(gameTaskID);
+                    scheduler.cancelTask(particleTaskID);
+                    scheduler.cancelTask(gameTaskID);
                 }
             }
         }, 0L, 20L);
     }
 
     protected boolean executeGame(@NotNull Game game, @NotNull EscapaBestia plugin) {
-//        assert game.getBestia() != null;
-//        Location pL = game.getBestia().getPlayer().getLocation().clone();
-//        pL.setY(pL.getY() + 2);
-//        Location effectL = pL;
-//        effect.setLocation(effectL);
-//        effect.start();
-
         if (game.getState().equals(GameState.PLAYING)) {
             if (time <= 0) {
-//                effect.cancel();
-                Bukkit.getScheduler().cancelTask(particleTaskID);
                 GameManager.finishGame(game, plugin, true);
                 return false;
             } else if (bestiaTime > 0) {
-                for(EscapaBestiaPlayer ep : game.getPlayers()) {
+                for (EscapaBestiaPlayer ep : game.getPlayers()) {
                     ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown
                             .replaceAll("%bestiaTime%", String.valueOf(bestiaTime))));
                 }
                 bestiaTime--;
                 game.decreaseTime();
                 time--;
-                return true;
             } else if (bestiaTime == 0) {
                 GameManager.teleportBestiaToPlayersSpawn(game);
-                for(EscapaBestiaPlayer ep : game.getPlayers()) {
+                for (EscapaBestiaPlayer ep : game.getPlayers()) {
                     ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown
                             .replaceAll("%bestiaTime%", String.valueOf(bestiaTime))));
                     ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaLiberada
@@ -145,42 +131,36 @@ public class CooldownManager {
                 game.decreaseTime();
                 time--;
                 bestiaTime--;
-                return true;
             } else if (time == game.getMaxTime()) {
-                for(EscapaBestiaPlayer ep : game.getPlayers()) {
+                for (EscapaBestiaPlayer ep : game.getPlayers()) {
                     ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown)
                             .replaceAll("%bestiaTime%", String.valueOf(bestiaTime)));
                 }
                 game.decreaseTime();
                 time--;
-                return true;
             } else {
                 game.decreaseTime();
                 time--;
-                return true;
             }
         } else {
             return false;
         }
+//        Location l = game.getBestia().getPlayer().getLocation().clone();
+//        l.setY(l.getY() + 2.5D);
+//        new ParticleBuilder(ParticleEffect.FLAME, l)
+//                .setSpeed(0.005F)
+//                .setAmount(25)
+//                .display();
+        return true;
     }
 
-    public void cooldownFinishGame(@NotNull Game game, @NotNull EscapaBestia plugin) {
+    void cooldownFinishGame(@NotNull Game game, @NotNull EscapaBestia plugin) {
         this.time = 10;
-        game.setTime(this.time);
-        ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-        for (EscapaBestiaPlayer player : players) {
-            String timePath = String.valueOf(this.time);
-            player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.GameStartCooldown)
-                    .replaceAll("%time%", timePath)
-                    .replaceAll("%game%", game.getName()));
-        }
-
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        finishTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
+        finishTaskID = scheduler.scheduleSyncRepeatingTask(plugin, new BukkitRunnable() {
             public void run() {
                 if (!executeFinishGame(game, plugin)) {
                     Bukkit.getScheduler().cancelTask(finishTaskID);
-                    return;
                 }
             }
         }, 0L, 20L);

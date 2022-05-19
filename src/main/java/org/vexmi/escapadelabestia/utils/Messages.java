@@ -50,11 +50,6 @@ public class Messages {
     public static String BestiaDead;
     public static String PlayerDeadByBestia;
 
-//  ErrorCodes Messages
-    public static String ErrorCodes_GOOD = null;
-    public static String ErrorCodes_WORLD_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! El mundo de esa partida no existe o no es encontrado.");
-    public static String ErrorCodes_LOBBY_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! EL lobby de esa partida no existe o no fue encontrado.");
-
     public static void init(EscapaBestia plugin) {
         FileConfiguration messages = plugin.getMessages();
 
@@ -101,5 +96,20 @@ public class Messages {
         PlayerDead = ChatColor.translateAlternateColorCodes('&', messages.getString("Messages.PlayerDead"));
         BestiaDead = ChatColor.translateAlternateColorCodes('&', messages.getString("Messages.BestiaDead"));
         PlayerDeadByBestia = ChatColor.translateAlternateColorCodes('&', messages.getString("Messages.PlayerDeadByBestia"));
+    }
+
+    public static class Error {
+        public static String GOOD = null;
+        public static String WORLD_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! El mundo de esa partida no existe o no es encontrado. &4Código de error&6 1");
+        public static String LOBBY_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! El lobby de esa partida no existe o no fue encontrado. &4Código de error&6 2");
+        public static String MATERIAL_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! El material de algún bloque no fue encontrado. &4Código de error&6 3");
+        public static String UNKNOWN_ERROR = ChatColor.translateAlternateColorCodes('&', "&cError desconocido! &4Código de error&6 4");
+        public static String PLAYER_ALREADY_IN_GAME = ChatColor.translateAlternateColorCodes('&', "&cError! Ya te encuentras en una partida. &4Código de error&6 5");
+        public static String NO_BESTIA_SPAWN = ChatColor.translateAlternateColorCodes('&', "&cError! El spawn de la bestia no existe o no fue encontrado. &4Código de error&6 6");
+        public static String NO_PLAYERS_SPAWN = ChatColor.translateAlternateColorCodes('&', "&cError! El spawn de los jugadores no existe o no fue encontrado. &4Código de error&6 7");
+        public static String GAME_NOT_FOUND = ChatColor.translateAlternateColorCodes('&', "&cError! La partida no fue encontrada. &4Código de error&6 8");
+        public static String GAME_NOT_ENABLED = ChatColor.translateAlternateColorCodes('&', "&cError! La partida no esta activada. &4Código de error&6 9");
+        public static String GAME_IS_PLAYING = ChatColor.translateAlternateColorCodes('&', "&cError! La partida ya fue iniciada. &4Código de error&6 10");
+        public static String GAME_IS_FULL = ChatColor.translateAlternateColorCodes('&', "&cError! La partida esta llena. &4Código de error&6 11");
     }
 }

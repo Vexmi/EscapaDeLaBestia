@@ -2,6 +2,7 @@ package org.vexmi.escapadelabestia.managers;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.PlayerInventory;
+import org.jetbrains.annotations.NotNull;
 import org.vexmi.escapadelabestia.EscapaBestia;
 import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import org.vexmi.escapadelabestia.classes.Game;
@@ -25,14 +26,20 @@ public class GameManager {
 
     private static final CooldownManager cooldownM = new CooldownManager();
 
-    public static ErrorCodes playerJoin(Game game, Player player, EscapaBestia plugin) {
-        for (Game game2 : plugin.games) {
-            for (EscapaBestiaPlayer ePlayer : game2.getPlayers()) {
+    public static ErrorCodes playerJoin(Game game, Player player, @NotNull EscapaBestia plugin) {
+        for (Game g : plugin.games) {
+            for (EscapaBestiaPlayer ePlayer : g.getPlayers()) {
                 if (ePlayer.getPlayer().equals(player)) {
                     return ErrorCodes.PLAYER_ALREADY_IN_GAME;
                 }
             }
         }
+
+        if (game.getLobby() == null)
+            return ErrorCodes.LOBBY_NOT_FOUND;
+        else if (Bukkit.getWorld(game.getLobby().getWorld().getName()) == null)
+            return ErrorCodes.WORLD_NOT_FOUND;
+
         EscapaBestiaPlayer pToAdd = new EscapaBestiaPlayer(player);
         game.addPlayer(pToAdd);
         ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
@@ -62,14 +69,9 @@ public class GameManager {
             player.removePotionEffect(e.getType());
         }
 
-        if (game.getLobby() == null)
-            return ErrorCodes.LOBBY_NOT_FOUND;
-        else if (Bukkit.getWorld(game.getLobby().getWorld().getName()) == null)
-            return ErrorCodes.WORLD_NOT_FOUND;
-        else
-            player.teleport(game.getLobby());
+        player.teleport(game.getLobby());
 
-        if (game.getActualPlayers() >= game.getMinPlayers() && !game.getState().equals(GameState.PLAYING)) {
+        if (game.getActualPlayers() >= game.getMinPlayers() && game.getState().equals(GameState.WAITING)) {
             //cooldown
             player.sendMessage(game.getState().getName());
             cooldownM.cooldownStartGame(game, plugin);
@@ -78,8 +80,9 @@ public class GameManager {
         return ErrorCodes.GOOD;
     }
 
-    public static ErrorCodes playerLeave(Game game, Player player, EscapaBestia plugin, boolean finishingGame, boolean closingServer) {
+    public static ErrorCodes playerLeave(@NotNull Game game, @NotNull Player player, EscapaBestia plugin, boolean finishingGame, boolean closingServer) {
         EscapaBestiaPlayer edlbP = game.getPlayer(player.getName());
+        assert edlbP != null;
         ItemStack[] savedInventory = edlbP.getSaved().getInvSaved();
         ItemStack[] savedEquipment = edlbP.getSaved().getArmorSaved();
         GameMode savedGamemode = edlbP.getSaved().getGamemodeSaved();
@@ -89,7 +92,7 @@ public class GameManager {
         double savedHealth = edlbP.getSaved().getHealthSaved();
         double savedMaxHealth = edlbP.getSaved().getMaxHealthSaved();
 
-        game.removePlayer(player.getName());
+        game.removePlayer(edlbP);
 
         if (!finishingGame) {
             ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
@@ -104,17 +107,17 @@ public class GameManager {
         }
 
         FileConfiguration mainlobby = plugin.getMainLobby();
-        World world = null;
+        World world;
         if (Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
             return ErrorCodes.WORLD_NOT_FOUND;
         else
             world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
 
-        double x = Double.valueOf(mainlobby.getString("MainLobby.x"));
-        double y = Double.valueOf(mainlobby.getString("MainLobby.y"));
-        double z = Double.valueOf(mainlobby.getString("MainLobby.z"));
-        float yaw = Float.valueOf(mainlobby.getString("MainLobby.yaw"));
-        float pitch = Float.valueOf(mainlobby.getString("MainLobby.pitch"));
+        double x = Double.parseDouble(mainlobby.getString("MainLobby.x"));
+        double y = Double.parseDouble(mainlobby.getString("MainLobby.y"));
+        double z = Double.parseDouble(mainlobby.getString("MainLobby.z"));
+        float yaw = Float.parseFloat(mainlobby.getString("MainLobby.yaw"));
+        float pitch = Float.parseFloat(mainlobby.getString("MainLobby.pitch"));
         Location l = new Location(world, x, y, z, yaw, pitch);
         player.teleport(l);
 
@@ -142,52 +145,52 @@ public class GameManager {
     }
 
     @SuppressWarnings("unlikely-arg-type")
-    public void startGame(Game game) {
-        for (EscapaBestiaPlayer p : game.getPlayers()) {
+    public void startGame(@NotNull Game game) {
+        ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
+        for (EscapaBestiaPlayer p : players) {
             p.getPlayer().setGameMode(GameMode.SURVIVAL);
         }
         game.setState(GameState.PLAYING);
         game.determineBestia();
 
+        assert game.getBestia() != null;
         game.getBestia().getPlayer().getInventory().clear();
         setBestiaInv(game.getBestia());
 
-        teleportPlayers(game);
-        ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
+        ErrorCodes tpError = teleportPlayers(game);
+        if(tpError.getMessage() != null) {
+            for (EscapaBestiaPlayer p : players) {
+                p.getPlayer().sendMessage(tpError.getMessage());
+            }
+        }
+
         for (EscapaBestiaPlayer p : players) {
             p.getPlayer().sendMessage(Messages.StartGame);
         }
 
-        CooldownManager cooldown = new CooldownManager();
-        cooldown.cooldownGame(game, plugin);
+        cooldownM.cooldownGame(game, plugin);
     }
 
-    private static void setBestiaInv(EscapaBestiaPlayer bestia) {
+    protected static void setBestiaInv(@NotNull EscapaBestiaPlayer bestia) {
         PlayerInventory inv = bestia.getPlayer().getInventory();
 
-        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD, 1, (short) 0);
-        ItemStack bow = new ItemStack(Material.BOW, 1, (short) 0);
+        inv.setItem(0, new ItemStack(Material.DIAMOND_SWORD, 1, (short) 0));
+        inv.setItem(1, new ItemStack(Material.BOW, 1, (short) 0));
+        inv.setItem(17, new ItemStack(Material.ARROW, 64, (short) 0));
 
-        ItemStack helmet = new ItemStack(Material.DIAMOND_HELMET, 1, (short) 0);
-        ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1, (short) 0);
-        ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS, 1, (short) 0);
-        ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS, 1, (short) 0);
-
-        inv.setItem(0, sword);
-        inv.setItem(1, bow);
-        inv.setHelmet(helmet);
-        inv.setChestplate(chestplate);
-        inv.setLeggings(leggings);
-        inv.setBoots(boots);
+        inv.setHelmet(new ItemStack(Material.DIAMOND_HELMET, 1, (short) 0));
+        inv.setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE, 1, (short) 0));
+        inv.setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS, 1, (short) 0));
+        inv.setBoots(new ItemStack(Material.DIAMOND_BOOTS, 1, (short) 0));
     }
 
-    private static ErrorCodes teleportPlayers(Game game) {
+    protected static ErrorCodes teleportPlayers(@NotNull Game game) {
         if (game.getBestiaSpawn() == null)
             return ErrorCodes.NO_BESTIA_SPAWN;
         if (game.getPlayersSpawn() == null)
             return ErrorCodes.NO_PLAYERS_SPAWN;
 
-        ArrayList<EscapaBestiaPlayer> players = (ArrayList<EscapaBestiaPlayer>) game.getPlayers();
+        ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
         for (EscapaBestiaPlayer p : players) {
             if (p.isBestia()) {
                 Player bestia = p.getPlayer();
@@ -204,21 +207,22 @@ public class GameManager {
         return ErrorCodes.UNKNOWN_ERROR;
     }
 
-    public static int teleportBestiaToPlayersSpawn(Game game) {
+    public static ErrorCodes teleportBestiaToPlayersSpawn(@NotNull Game game) {
         if (game.getPlayersSpawn() == null)
-            return ErrorCodes.NO_PLAYERS_SPAWN.getCode();
+            return ErrorCodes.NO_PLAYERS_SPAWN;
 
         try {
+            assert game.getBestia() != null;
             game.getBestia().getPlayer().teleport(game.getPlayersSpawn());
 
-            return ErrorCodes.GOOD.getCode();
+            return ErrorCodes.GOOD;
         } catch (Exception e) {
             e.printStackTrace();
-            return ErrorCodes.UNKNOWN_ERROR.getCode();
+            return ErrorCodes.UNKNOWN_ERROR;
         }
     }
 
-    public static void finishGame(Game game, EscapaBestia plugin, boolean bestiaWin) {
+    public static void finishGame(@NotNull Game game, EscapaBestia plugin, boolean bestiaWin) {
         game.setState(GameState.FINISHING);
         game.setGameFinishing(true);
         cooldownM.cooldownFinishGame(game, plugin);

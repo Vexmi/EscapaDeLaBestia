@@ -1,9 +1,5 @@
 package org.vexmi.escapadelabestia.events;
 
-import org.vexmi.escapadelabestia.EscapaBestia;
-import org.vexmi.escapadelabestia.classes.Game;
-import org.vexmi.escapadelabestia.classes.InvOwner;
-import org.vexmi.escapadelabestia.managers.GameManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +8,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.vexmi.escapadelabestia.EscapaBestia;
+import org.vexmi.escapadelabestia.classes.Game;
+import org.vexmi.escapadelabestia.classes.InvOwner;
+import org.vexmi.escapadelabestia.managers.GameManager;
 import org.vexmi.escapadelabestia.utils.ErrorCodes;
 
 public class InvEvents implements Listener {
@@ -21,7 +21,7 @@ public class InvEvents implements Listener {
         this.plugin = plugin;
     }
 
-    private GameManager gameM = new GameManager(plugin);
+    private final GameManager gameM = new GameManager(plugin);
 
     @EventHandler
     public void onInvClick(InventoryClickEvent event) {
@@ -32,23 +32,36 @@ public class InvEvents implements Listener {
             if (ChatColor.stripColor(inv.getName()).equals(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', joinGamesInv)))) {
                 event.setCancelled(true);
                 String glassM = plugin.getConfig().getString("Config.joinGamesInv.fill-glass.material");
-                if (event.getCurrentItem() == null || event.getSlotType() == null || event.getCurrentItem().getType() == Material.getMaterial(glassM))
-                    return;
+                if (event.getCurrentItem() == null || event.getSlotType() == null || event.getCurrentItem().getType() == Material.getMaterial(glassM)) {}
                 else {
                     ItemStack stack = event.getCurrentItem();
                     String gameName = ChatColor.stripColor(stack.getItemMeta().getDisplayName());
-                    if (plugin.getGame(gameName) != null) {
-                        Game game = plugin.getGame(gameName);
-                        if (game.isEnabled())
-                            if (plugin.getPlayerGame(player.getName()) == null)
-                                if (!game.isPlaying())
-                                    if (!game.isFull())
-                                        if(GameManager.playerJoin(game, player, plugin).getCode() != 0)
-                                            player.sendMessage(GameManager.playerJoin(game, player, plugin).getMessage());
+                    Game game = plugin.getGame(gameName);
+                    if (game != null) {
+                        if (game.isEnabled()) {
+                            if (plugin.getPlayerGame(player.getName()) == null) {
+                                if (!game.isPlaying()) {
+                                    if (!game.isFull()) {
+                                        ErrorCodes error = GameManager.playerJoin(game, player, plugin);
+
+                                        player.sendMessage(error.getMessage());
+                                    } else {
+                                        player.sendMessage(ErrorCodes.GAME_IS_FULL.getMessage());
+                                    }
+                                } else {
+                                    player.sendMessage(ErrorCodes.GAME_IS_PLAYING.getMessage());
+                                }
+
+                            } else {
+                                player.sendMessage(ErrorCodes.PLAYER_ALREADY_IN_GAME.getMessage());
+                            }
+                        } else {
+                            player.sendMessage(ErrorCodes.GAME_NOT_ENABLED.getMessage());
+                        }
                     } else {
-                        player.closeInventory();
-                        player.sendMessage(ErrorCodes.UNKNOWN_ERROR.getMessage());
+                        player.sendMessage(ErrorCodes.GAME_NOT_FOUND.getMessage());
                     }
+                    player.closeInventory();
                 }
             }
         }

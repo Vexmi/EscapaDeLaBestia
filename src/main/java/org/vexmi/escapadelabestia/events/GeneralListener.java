@@ -6,6 +6,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.vexmi.escapadelabestia.EscapaBestia;
 import org.vexmi.escapadelabestia.classes.Game;
 import org.vexmi.escapadelabestia.managers.GameManager;
+import org.vexmi.escapadelabestia.utils.ErrorCodes;
 
 public class GeneralListener implements Listener {
 
@@ -18,7 +19,10 @@ public class GeneralListener implements Listener {
     public void onPlayerLeave(PlayerQuitEvent e) {
         if(plugin.getPlayerGame(e.getPlayer().getName()) != null) {
             Game game = plugin.getPlayerGame(e.getPlayer().getName());
-            GameManager.playerLeave(game, e.getPlayer(), plugin, false, false);
+            ErrorCodes error = GameManager.playerLeave(game, e.getPlayer(), plugin, false, false);
+            if(error.getMessage() != null) {
+                e.getPlayer().sendMessage(error.getMessage());
+            }
         }
     }
 }

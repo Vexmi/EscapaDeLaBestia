@@ -5,6 +5,8 @@ main: org.vexmi.escapadelabestia.EscapaBestia
 load: POSTWORLD
 softdepend:
   - PlaceHolderAPI
+depend:
+  - Multiverse-Core
 authors:
   - Adrigamer2950
   - SrBigos
@@ -12,8 +14,8 @@ authors:
 commands:
   edlb:
     aliases: ["escapadelabestia"]
-    permission: edlb.*
     usage: "Usage: /edlb help"
+    permission: edlb.default
 
 permissions:
   edlb.*:

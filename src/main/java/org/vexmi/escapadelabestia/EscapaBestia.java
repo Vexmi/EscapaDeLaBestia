@@ -1,19 +1,11 @@
 package org.vexmi.escapadelabestia;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
@@ -22,11 +14,14 @@ import org.vexmi.escapadelabestia.classes.GameState;
 import org.vexmi.escapadelabestia.cmds.EBCmd;
 import org.vexmi.escapadelabestia.events.GameEvents;
 import org.vexmi.escapadelabestia.events.InvEvents;
+import org.vexmi.escapadelabestia.managers.SignsManager;
 import org.vexmi.escapadelabestia.utils.Config;
 import org.vexmi.escapadelabestia.utils.Messages;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -47,11 +42,16 @@ public class EscapaBestia extends JavaPlugin {
     private File gamesFile = null;
     private FileConfiguration mainlobby = null;
     private File mainlobbyFile = null;
+    private FileConfiguration signs = null;
+    private File signsFile = null;
     public ArrayList<Game> games;
 
     private static EscapaBestia plugin;
+    SignsManager signsM = new SignsManager();
 
-    public static ProtocolManager manager = ProtocolLibrary.getProtocolManager();
+    public static EscapaBestia getPlugin() {
+        return plugin;
+    }
 
     public String colorText(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
@@ -60,16 +60,19 @@ public class EscapaBestia extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
-        games = new ArrayList<Game>();
+        games = new ArrayList<>();
         registerConfig();
         Config.init(this);
         registerMessages();
         Messages.init(this);
+        registerSignsFile();
         //registerMainLobby();
         registerGames();
         registerEvents();
         registerCommands();
+
         loadGames();
+        loadSigns();
 
         if (pm.getPlugin("PlaceholderAPI") != null)
             new PlaceHolderAPIExpansion(this).register();
@@ -79,8 +82,19 @@ public class EscapaBestia extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        saveGamesFile();
+        saveMessages();
+        saveConfig();
+
+        try {
+            signs.save(signsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         saveGames();
+        saveSigns();
         //saveMainLobby();
+
         log(Level.INFO, colorText("&4Plugin Disabled Successfully"));
     }
 
@@ -94,46 +108,55 @@ public class EscapaBestia extends JavaPlugin {
 
     public void saveGames() {
         FileConfiguration games = getGamesFile();
-        games.set("Games", null);
         for (Game g : this.games) {
-            String name = g.getName();
-            games.set("Games." + name + ".min_players", g.getMinPlayers());
-            games.set("Games." + name + ".max_players", g.getMaxPlayers());
-            games.set("Games." + name + ".time", g.getMaxTime());
+            String nameGame = g.getName();
+            games.set("Games." + nameGame + ".min_players", g.getMinPlayers());
+            games.set("Games." + nameGame + ".max_players", g.getMaxPlayers());
+            games.set("Games." + nameGame + ".time", g.getMaxTime());
             Location llobby = g.getLobby();
             if (llobby != null) {
-                games.set("Games." + name + ".lobby.world", llobby.getWorld().getName());
-                games.set("Games." + name + ".lobby.x", llobby.getX());
-                games.set("Games." + name + ".lobby.y", llobby.getY());
-                games.set("Games." + name + ".lobby.z", llobby.getZ());
-                games.set("Games." + name + ".lobby.yaw", llobby.getYaw());
-                games.set("Games." + name + ".lobby.pitch", llobby.getPitch());
+                games.set("Games." + nameGame + ".lobby.world", llobby.getWorld().getName());
+                games.set("Games." + nameGame + ".lobby.x", llobby.getX());
+                games.set("Games." + nameGame + ".lobby.y", llobby.getY());
+                games.set("Games." + nameGame + ".lobby.z", llobby.getZ());
+                games.set("Games." + nameGame + ".lobby.yaw", llobby.getYaw());
+                games.set("Games." + nameGame + ".lobby.pitch", llobby.getPitch());
             }
 
             Location lSpawnBestia = g.getBestiaSpawn();
             if (lSpawnBestia != null) {
-                games.set("Games." + name + ".bestia.world", lSpawnBestia.getWorld().getName());
-                games.set("Games." + name + ".bestia.x", lSpawnBestia.getX());
-                games.set("Games." + name + ".bestia.y", lSpawnBestia.getY());
-                games.set("Games." + name + ".bestia.z", lSpawnBestia.getZ());
-                games.set("Games." + name + ".bestia.yaw", lSpawnBestia.getYaw());
-                games.set("Games." + name + ".bestia.pitch", lSpawnBestia.getPitch());
+                games.set("Games." + nameGame + ".bestia.world", lSpawnBestia.getWorld().getName());
+                games.set("Games." + nameGame + ".bestia.x", lSpawnBestia.getX());
+                games.set("Games." + nameGame + ".bestia.y", lSpawnBestia.getY());
+                games.set("Games." + nameGame + ".bestia.z", lSpawnBestia.getZ());
+                games.set("Games." + nameGame + ".bestia.yaw", lSpawnBestia.getYaw());
+                games.set("Games." + nameGame + ".bestia.pitch", lSpawnBestia.getPitch());
             }
 
             Location lSpawnPlayers = g.getPlayersSpawn();
             if (lSpawnPlayers != null) {
-                games.set("Games." + name + ".players.world", lSpawnPlayers.getWorld().getName());
-                games.set("Games." + name + ".players.x", lSpawnPlayers.getX());
-                games.set("Games." + name + ".players.y", lSpawnPlayers.getY());
-                games.set("Games." + name + ".players.z", lSpawnPlayers.getZ());
-                games.set("Games." + name + ".players.yaw", lSpawnPlayers.getYaw());
-                games.set("Games." + name + ".players.pitch", lSpawnPlayers.getPitch());
+                games.set("Games." + nameGame + ".players.world", lSpawnPlayers.getWorld().getName());
+                games.set("Games." + nameGame + ".players.x", lSpawnPlayers.getX());
+                games.set("Games." + nameGame + ".players.y", lSpawnPlayers.getY());
+                games.set("Games." + nameGame + ".players.z", lSpawnPlayers.getZ());
+                games.set("Games." + nameGame + ".players.yaw", lSpawnPlayers.getYaw());
+                games.set("Games." + nameGame + ".players.pitch", lSpawnPlayers.getPitch());
+            }
+
+            Location lSpawnChest = g.getChestsLocation();
+            if (lSpawnChest != null) {
+                games.set("Games." + nameGame + ".chests.world", lSpawnChest.getWorld().getName());
+                games.set("Games." + nameGame + ".chests.x", lSpawnChest.getX());
+                games.set("Games." + nameGame + ".chests.y", lSpawnChest.getY());
+                games.set("Games." + nameGame + ".chests.z", lSpawnChest.getZ());
+                games.set("Games." + nameGame + ".chests.yaw", lSpawnChest.getYaw());
+                games.set("Games." + nameGame + ".chests.pitch", lSpawnChest.getPitch());
             }
 
             if (g.getState().equals(GameState.DISABLED))
-                games.set("Games." + name + ".enabled", false);
+                games.set("Games." + nameGame + ".enabled", false);
             else
-                games.set("Games." + name + ".enabled", true);
+                games.set("Games." + nameGame + ".enabled", true);
         }
         saveGamesFile();
     }
@@ -153,9 +176,9 @@ public class EscapaBestia extends JavaPlugin {
                     double zLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".lobby.z"));
                     float yawLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".lobby.yaw"));
                     float pitchLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".lobby.pitch"));
-                    World worldLobby = Bukkit.getWorld(gamesC.getString("Games." + nameGame + ".lobby.world"));
+                    World worldLobby = getServer().getWorld(gamesC.getString("Games." + nameGame + ".lobby.world"));
                     if (worldLobby == null) {
-                        log(Level.SEVERE, "lobby world for game '" + nameGame + "' is null!");
+                        log(Level.SEVERE, "Lobby world for game '" + nameGame + "' is null!");
                     } else {
                         lLobby = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
                     }
@@ -168,9 +191,9 @@ public class EscapaBestia extends JavaPlugin {
                     double zLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".players.z"));
                     float yawLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".players.yaw"));
                     float pitchLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".players.pitch"));
-                    World worldLobby = Bukkit.getWorld(gamesC.getString("Games." + nameGame + ".players.world"));
+                    World worldLobby = getServer().getWorld(gamesC.getString("Games." + nameGame + ".players.world"));
                     if (worldLobby == null) {
-                        log(Level.SEVERE, "player world for game '" + nameGame + "' is null!");
+                        log(Level.SEVERE, "Player world for game '" + nameGame + "' is null!");
                     } else {
                         lPSpawn = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
                     }
@@ -183,20 +206,36 @@ public class EscapaBestia extends JavaPlugin {
                     double zLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".bestia.z"));
                     float yawLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".bestia.yaw"));
                     float pitchLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".bestia.pitch"));
-                    World worldLobby = Bukkit.getWorld(gamesC.getString("Games." + nameGame + ".bestia.world"));
+                    World worldLobby = getServer().getWorld(gamesC.getString("Games." + nameGame + ".bestia.world"));
                     if (worldLobby == null) {
-                        log(Level.SEVERE, "bestia world for game '" + nameGame + "' is null!");
+                        log(Level.SEVERE, "Bestia world for game '" + nameGame + "' is null!");
                     } else {
                         lBSpawn = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
+                    }
+                }
+
+                Location lSpawnChest = null;
+                if (gamesC.contains("Games." + nameGame + ".chests")) {
+                    double xLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".chests.x"));
+                    double yLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".chests.y"));
+                    double zLobby = Double.parseDouble(gamesC.getString("Games." + nameGame + ".chests.z"));
+                    float yawLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".chests.yaw"));
+                    float pitchLobby = Float.parseFloat(gamesC.getString("Games." + nameGame + ".chests.pitch"));
+                    World worldLobby = getServer().getWorld(gamesC.getString("Games." + nameGame + ".chests.world"));
+                    if (worldLobby == null) {
+                        log(Level.SEVERE, "Chest world for game '" + nameGame + "' is null!");
+                    } else {
+                        lSpawnChest = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
                     }
                 }
 
                 Game game = new Game(nameGame);
                 game.setMaxPlayers(maxPlayers);
                 game.setMinPlayers(minPlayers);
-                game.setLobby(lLobby);
-                game.setPlayersSpawn(lPSpawn);
-                game.setBestiaSpawn(lBSpawn);
+                if (lLobby != null) game.setLobby(lLobby);
+                if (lPSpawn != null) game.setPlayersSpawn(lPSpawn);
+                if (lBSpawn != null) game.setBestiaSpawn(lBSpawn);
+                if (lSpawnChest != null) game.setChestsLocation(lSpawnChest);
                 game.setName(nameGame);
                 game.setMaxTime(time);
 
@@ -220,11 +259,7 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     public void removeGame(String name) {
-        for (Game game : this.games) {
-            if (game.getName().equals(name)) {
-                this.games.remove(game);
-            }
-        }
+        this.games.removeIf(game -> game.getName().equals(name));
     }
 
     public Game getGame(String name) {
@@ -256,6 +291,7 @@ public class EscapaBestia extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new InvEvents(this), this);
         pm.registerEvents(new GameEvents(this), this);
+        pm.registerEvents(signsM, this);
     }
 
     private void registerCommands() {
@@ -283,14 +319,10 @@ public class EscapaBestia extends JavaPlugin {
         }
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         Reader defConfigStream;
-        try {
-            defConfigStream = new InputStreamReader(this.getResource("messages.yml"), "UTF8");
-            if (defConfigStream != null) {
-                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-                messages.setDefaults(defConfig);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        defConfigStream = new InputStreamReader(this.getResource("messages.yml"), StandardCharsets.UTF_8);
+        if (defConfigStream != null) {
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+            messages.setDefaults(defConfig);
         }
     }
 
@@ -323,14 +355,10 @@ public class EscapaBestia extends JavaPlugin {
         }
         fileGames = YamlConfiguration.loadConfiguration(gamesFile);
         Reader defConfigStream;
-        try {
-            defConfigStream = new InputStreamReader(this.getResource("games.yml"), "UTF8");
-            if (defConfigStream != null) {
-                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-                fileGames.setDefaults(defConfig);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        defConfigStream = new InputStreamReader(this.getResource("games.yml"), StandardCharsets.UTF_8);
+        if (defConfigStream != null) {
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+            fileGames.setDefaults(defConfig);
         }
     }
 
@@ -351,10 +379,10 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     public FileConfiguration getMainLobby() {
-        if (messages == null) {
-            reloadMessages();
+        if (mainlobby == null) {
+            reloadMainLobby();
         }
-        return messages;
+        return mainlobby;
     }
 
     public void reloadMainLobby() {
@@ -363,14 +391,10 @@ public class EscapaBestia extends JavaPlugin {
         }
         mainlobby = YamlConfiguration.loadConfiguration(mainlobbyFile);
         Reader defConfigStream;
-        try {
-            defConfigStream = new InputStreamReader(this.getResource("mainlobby.yml"), "UTF8");
-            if (defConfigStream != null) {
-                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-                mainlobby.setDefaults(defConfig);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        defConfigStream = new InputStreamReader(this.getResource("mainlobby.yml"), StandardCharsets.UTF_8);
+        if (defConfigStream != null) {
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+            mainlobby.setDefaults(defConfig);
         }
     }
 
@@ -387,6 +411,91 @@ public class EscapaBestia extends JavaPlugin {
         if (!mainlobbyFile.exists()) {
             this.getMainLobby().options().copyDefaults(true);
             saveMainLobby();
+        }
+    }
+
+    private void saveSigns() {
+        for (Map.Entry<Location, Game> entry : signsM.gameSigns.entrySet()) {
+            Game game = entry.getValue();
+            Location location = entry.getKey();
+
+            getSignsFile().set("Signs." + game.getName() + ".world", location.getWorld());
+            getSignsFile().set("Signs." + game.getName() + ".x", location.getX());
+            getSignsFile().set("Signs." + game.getName() + ".y", location.getY());
+            getSignsFile().set("Signs." + game.getName() + ".z", location.getZ());
+            getSignsFile().set("Signs." + game.getName() + ".yaw", location.getYaw());
+            getSignsFile().set("Signs." + game.getName() + ".pitch", location.getPitch());
+
+            getSignsFile().set("Signs." + game.getName() + ".type", "games");
+        }
+
+        for (Map.Entry<Location, Game> entry : signsM.chestSigns.entrySet()) {
+            Game game = entry.getValue();
+            Location location = entry.getKey();
+
+            signs.set("Signs." + game.getName() + ".world", location.getWorld());
+            signs.set("Signs." + game.getName() + ".x", location.getX());
+            signs.set("Signs." + game.getName() + ".y", location.getY());
+            signs.set("Signs." + game.getName() + ".z", location.getZ());
+            signs.set("Signs." + game.getName() + ".yaw", location.getYaw());
+            signs.set("Signs." + game.getName() + ".pitch", location.getPitch());
+
+            signs.set("Signs." + game.getName() + ".type", "chests");
+        }
+    }
+
+    private void loadSigns() {
+        if (!signs.contains("Signs")) return;
+        for (String nameGame : signs.getConfigurationSection("Signs").getKeys(false)) {
+            Location l = null;
+            double xLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".x"));
+            double yLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".y"));
+            double zLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".z"));
+            float yawLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".yaw"));
+            float pitchLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".pitch"));
+            World worldLobby = getServer().getWorld(signs.getString("Signs." + nameGame + ".world"));
+            if (worldLobby == null) {
+                log(Level.SEVERE, "World for the sign of game '" + nameGame + "' is null!");
+            } else {
+                l = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
+            }
+
+            if (getSignsFile().getString("Signs." + nameGame + ".type").equals("games"))
+                signsM.gameSigns.put(l, getGame(nameGame));
+            else
+                signsM.chestSigns.put(l, getGame(nameGame));
+        }
+    }
+
+    private void registerSignsFile() {
+        signsFile = new File(this.getDataFolder(), "signs.yml");
+        if (!signsFile.exists()) {
+            this.getSignsFile().options().copyDefaults(true);
+            try {
+                signs.save(signsFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public FileConfiguration getSignsFile() {
+        if (signs == null) {
+            reloadSignsFile();
+        }
+        return signs;
+    }
+
+    public void reloadSignsFile() {
+        if (signs == null) {
+            signsFile = new File(getDataFolder(), "signs.yml");
+        }
+        signs = YamlConfiguration.loadConfiguration(signsFile);
+        Reader defConfigStream;
+        defConfigStream = new InputStreamReader(this.getResource("signs.yml"), StandardCharsets.UTF_8);
+        if (defConfigStream != null) {
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+            signs.setDefaults(defConfig);
         }
     }
 }
