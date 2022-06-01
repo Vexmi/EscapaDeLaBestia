@@ -15,7 +15,8 @@ public enum ErrorCodes {
     GAME_NOT_FOUND("GAME_NOT_FOUND", 8, Messages.Error.GAME_NOT_FOUND),
     GAME_NOT_ENABLED("GAME_NOT_ENABLED", 9, Messages.Error.GAME_NOT_ENABLED),
     GAME_IS_PLAYING("GAME_IS_PLAYING", 10, Messages.Error.GAME_IS_PLAYING),
-    GAME_IS_FULL("GAME_IS_FULL", 11, Messages.Error.GAME_IS_FULL);
+    GAME_IS_FULL("GAME_IS_FULL", 11, Messages.Error.GAME_IS_FULL),
+    PLAYER_ISNT_IN_GAME("PLAYER_ISNT_IN_GAME", 12, Messages.Error.PLAYER_ISNT_IN_GAME);
 
     @NotNull private final String name;
     private final int code;

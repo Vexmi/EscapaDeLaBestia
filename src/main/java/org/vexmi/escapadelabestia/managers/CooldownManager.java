@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
+import org.vexmi.escapadelabestia.utils.ActionBarAPI;
 import org.vexmi.escapadelabestia.EscapaBestia;
 import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import org.vexmi.escapadelabestia.classes.Game;
@@ -28,7 +29,7 @@ public class CooldownManager {
 
     int bestiaTime;
 
-    public void cooldownStartGame(Game game, EscapaBestia plugin) {
+    void cooldownStartGame(Game game, EscapaBestia plugin) {
         game.setState(GameState.STARTING);
         this.time = 10;
         FileConfiguration messages = plugin.getMessages();
@@ -50,7 +51,6 @@ public class CooldownManager {
         }, 0L, 20L);
     }
 
-    @SuppressWarnings("unlikely-arg-type")
     protected boolean executeStartGame(Game game, EscapaBestia plugin) {
         if (game != null && game.getState().equals(GameState.STARTING)) {
             if (time <= 5 && time > 0) {
@@ -114,8 +114,10 @@ public class CooldownManager {
                 return false;
             } else if (bestiaTime > 0) {
                 for (EscapaBestiaPlayer ep : game.getPlayers()) {
-                    ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown
+                    new ActionBarAPI().sendActionBar(ep.getPlayer(), ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown
                             .replaceAll("%bestiaTime%", String.valueOf(bestiaTime))));
+//                    ep.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.BestiaCooldown
+//                            .replaceAll("%bestiaTime%", String.valueOf(bestiaTime))));
                 }
                 bestiaTime--;
                 game.decreaseTime();
@@ -168,14 +170,15 @@ public class CooldownManager {
 
     protected boolean executeFinishGame(Game game, EscapaBestia plugin) {
         if (game != null && game.getState().equals(GameState.FINISHING)) {
-            game.decreaseTime();
             if (time == 0) {
+                new ScoreboardManager(game).hideScoreboard();
                 List<String> onWinCmds = plugin.getConfig().getStringList("Config.onWinCmds");
                 for (String cmd : onWinCmds) {
                     plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
                 }
                 return false;
             } else {
+                game.decreaseTime();
                 time--;
                 return true;
             }

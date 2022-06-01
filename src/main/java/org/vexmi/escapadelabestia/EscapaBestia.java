@@ -15,10 +15,14 @@ import org.vexmi.escapadelabestia.cmds.EBCmd;
 import org.vexmi.escapadelabestia.events.GameEvents;
 import org.vexmi.escapadelabestia.events.InvEvents;
 import org.vexmi.escapadelabestia.managers.SignsManager;
+import org.vexmi.escapadelabestia.utils.Colors;
 import org.vexmi.escapadelabestia.utils.Config;
 import org.vexmi.escapadelabestia.utils.Messages;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
@@ -47,7 +51,10 @@ public class EscapaBestia extends JavaPlugin {
     public ArrayList<Game> games;
 
     private static EscapaBestia plugin;
-    SignsManager signsM = new SignsManager();
+    private SignsManager signsM = new SignsManager();
+
+    public String bukkitVersion = this.getServer().getBukkitVersion();
+    public boolean isSpigotServer = this.getServer().getVersion().contains("Spigot");
 
     public static EscapaBestia getPlugin() {
         return plugin;
@@ -58,16 +65,28 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         plugin = this;
         games = new ArrayList<>();
+
+        if (!isSpigotServer)
+            log(Level.INFO, "&2Running on &6Bukkit " + this.getServer().getBukkitVersion());
+        else
+            log(Level.INFO, "&2Running on &6Spigot " + this.getServer().getBukkitVersion());
+
+        log(Level.INFO, this.getServer().getVersion());
+
         registerConfig();
-        Config.init(this);
         registerMessages();
+        Config.init(this);
         Messages.init(this);
-        registerSignsFile();
         //registerMainLobby();
         registerGames();
+        registerSignsFile();
+    }
+
+    @Override
+    public void onEnable() {
         registerEvents();
         registerCommands();
 
@@ -77,14 +96,12 @@ public class EscapaBestia extends JavaPlugin {
         if (pm.getPlugin("PlaceholderAPI") != null)
             new PlaceHolderAPIExpansion(this).register();
 
-        log(Level.INFO, colorText("Plugin Enabled Successfully"));
+        log(Level.INFO, "Plugin Enabled Successfully");
     }
 
     @Override
     public void onDisable() {
         saveGamesFile();
-        saveMessages();
-        saveConfig();
 
         try {
             signs.save(signsFile);
@@ -95,11 +112,11 @@ public class EscapaBestia extends JavaPlugin {
         saveSigns();
         //saveMainLobby();
 
-        log(Level.INFO, colorText("&4Plugin Disabled Successfully"));
+        log(Level.INFO, "&4Plugin Disabled Successfully");
     }
 
     public void log(Level level, Object msg) {
-        getLogger().log(level, String.valueOf(msg));
+        getLogger().log(level, Colors.translateColors(String.valueOf(msg)));
     }
 
     public void logException(Level level, String msg, Exception ex) {
@@ -107,6 +124,7 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     public void saveGames() {
+        log(Level.INFO, "&4Saving EDLB's games");
         FileConfiguration games = getGamesFile();
         for (Game g : this.games) {
             String nameGame = g.getName();
@@ -164,6 +182,7 @@ public class EscapaBestia extends JavaPlugin {
     public void loadGames() {
         FileConfiguration gamesC = getGamesFile();
         if (gamesC.contains("Games")) {
+            log(Level.INFO, "&2Loading EDLB's games");
             for (String nameGame : gamesC.getConfigurationSection("Games").getKeys(false)) {
                 int minPlayers = Integer.parseInt(gamesC.getString("Games." + nameGame + ".min_players"));
                 int maxPlayers = Integer.parseInt(gamesC.getString("Games." + nameGame + ".max_players"));
@@ -262,12 +281,15 @@ public class EscapaBestia extends JavaPlugin {
         this.games.removeIf(game -> game.getName().equals(name));
     }
 
+    public void removeGame(Game game) {
+        this.games.removeIf(gamee -> gamee.equals(game));
+    }
+
     public Game getGame(String name) {
-        for (Game game : this.games) {
-            if (game.getName().equals(name)) {
+        for (Game game : this.games)
+            if (game.getName().equals(name))
                 return game;
-            }
-        }
+
         return null;
     }
 
@@ -288,6 +310,7 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     private void registerEvents() {
+        log(Level.INFO, "&2Loading EDLB's events");
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new InvEvents(this), this);
         pm.registerEvents(new GameEvents(this), this);
@@ -295,6 +318,7 @@ public class EscapaBestia extends JavaPlugin {
     }
 
     private void registerCommands() {
+        log(Level.INFO, "&2Loading EDLB's commands");
         getCommand("edlb").setExecutor(new EBCmd(this));
     }
 
@@ -442,29 +466,37 @@ public class EscapaBestia extends JavaPlugin {
 
             signs.set("Signs." + game.getName() + ".type", "chests");
         }
+
+        try {
+            signs.save(signsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadSigns() {
-        if (!signs.contains("Signs")) return;
-        for (String nameGame : signs.getConfigurationSection("Signs").getKeys(false)) {
-            Location l = null;
-            double xLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".x"));
-            double yLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".y"));
-            double zLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".z"));
-            float yawLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".yaw"));
-            float pitchLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".pitch"));
-            World worldLobby = getServer().getWorld(signs.getString("Signs." + nameGame + ".world"));
-            if (worldLobby == null) {
-                log(Level.SEVERE, "World for the sign of game '" + nameGame + "' is null!");
-            } else {
-                l = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
-            }
+        try {
+            if (signs.getConfigurationSection("Signs") == null) return;
+            for (String nameGame : signs.getConfigurationSection("Signs").getKeys(false)) {
+                Location l = null;
+                double xLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".x"));
+                double yLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".y"));
+                double zLobby = Double.parseDouble(signs.getString("Signs." + nameGame + ".z"));
+                float yawLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".yaw"));
+                float pitchLobby = Float.parseFloat(signs.getString("Signs." + nameGame + ".pitch"));
+                World worldLobby = getServer().getWorld(signs.getString("Signs." + nameGame + ".world"));
+                if (worldLobby == null) {
+                    log(Level.SEVERE, "World for the sign of game '" + nameGame + "' is null!");
+                } else {
+                    l = new Location(worldLobby, xLobby, yLobby, zLobby, yawLobby, pitchLobby);
+                }
 
-            if (getSignsFile().getString("Signs." + nameGame + ".type").equals("games"))
-                signsM.gameSigns.put(l, getGame(nameGame));
-            else
-                signsM.chestSigns.put(l, getGame(nameGame));
-        }
+                if (getSignsFile().getString("Signs." + nameGame + ".type").equals("games"))
+                    signsM.gameSigns.put(l, getGame(nameGame));
+                else
+                    signsM.chestSigns.put(l, getGame(nameGame));
+            }
+        } catch (NullPointerException ignored) {}
     }
 
     private void registerSignsFile() {

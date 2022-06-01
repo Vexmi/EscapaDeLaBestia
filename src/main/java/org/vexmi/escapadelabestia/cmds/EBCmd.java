@@ -1,6 +1,11 @@
 package org.vexmi.escapadelabestia.cmds;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.vexmi.escapadelabestia.EscapaBestia;
 import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
 import org.vexmi.escapadelabestia.classes.Game;
@@ -8,11 +13,6 @@ import org.vexmi.escapadelabestia.managers.GameManager;
 import org.vexmi.escapadelabestia.managers.InvManager;
 import org.vexmi.escapadelabestia.utils.AdminCmd;
 import org.vexmi.escapadelabestia.utils.ErrorCodes;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +36,35 @@ public class EBCmd implements CommandExecutor {
         Player player = (Player) sender;
         if (args.length >= 1) {
             if (args[0].equalsIgnoreCase("create")) {
+                if (!player.hasPermission("edlb.admin")) return true;
                 if (!(args.length >= 2)) {
-                    player.sendMessage(plugin.colorText("&cQue tal si pones como se va a llamar la partida? :D"));
+                    player.sendMessage(plugin.colorText("&cDebes poner el nombre de la partida"));
+                    return true;
+                }
+                if(plugin.getGame(args[1]) != null) {
+                    player.sendMessage(plugin.colorText("&cEsa partida ya existe"));
                     return true;
                 }
                 EscapaBestiaPlayer eplayer = new EscapaBestiaPlayer(player);
                 Bukkit.getConsoleSender().sendMessage(plugin.colorText(eplayer.getName()));
                 Game game = new Game(args[1], 1, 10);
                 plugin.addGame(game);
+            } else if (args[0].equalsIgnoreCase("delete")) {
+                if (!player.hasPermission("edlb.default")) return true;
+                if (!(args.length >= 2)) {
+                    player.sendMessage(plugin.colorText("&cDebes poner el nombre de la partida"));
+                    return true;
+                }
+                if(plugin.getGame(args[1]) == null) {
+                    player.sendMessage(plugin.colorText("&cEsa partida no existe"));
+                    return true;
+                }
+                EscapaBestiaPlayer eplayer = new EscapaBestiaPlayer(player);
+                Bukkit.getConsoleSender().sendMessage(plugin.colorText(eplayer.getName()));
+                Game game = new Game(args[1], 1, 10);
+                plugin.removeGame(game);
             } else if (args[0].equalsIgnoreCase("join")) {
+                if (!player.hasPermission("edlb.default")) return true;
                 if (!(args.length >= 2)) {
                     player.sendMessage(plugin.colorText("&cTe recomiendo poner el nombre de la partida salu2"));
                     return true;
@@ -76,7 +96,23 @@ public class EBCmd implements CommandExecutor {
                     }
                 }
                 return true;
+            } else if (args[0].equalsIgnoreCase("leave")) {
+                if (!player.hasPermission("edlb.default")) return true;
+                if (!(args.length >= 2)) {
+                    player.sendMessage(plugin.colorText("&cTe recomiendo poner el nombre de la partida salu2"));
+                    return true;
+                } else {
+                    if (plugin.getPlayerGame(player.getName()) != null) {
+                        ErrorCodes error = GameManager.playerLeave(plugin.getPlayerGame(player.getName()), player, plugin, false, false);
+
+                        player.sendMessage(error.getMessage());
+                    } else {
+                        player.sendMessage(ErrorCodes.PLAYER_ISNT_IN_GAME.getMessage());
+                    }
+                }
+                return true;
             } else if (args[0].equalsIgnoreCase("admin")) {
+                if (!player.hasPermission("edlb.admin")) return true;
                 if (!(args.length >= 2)) {
                     player.sendMessage("tienes que poner que comando de admin quieres usar ._.");
                     return true;
@@ -98,7 +134,9 @@ public class EBCmd implements CommandExecutor {
             } else if (args[0].equalsIgnoreCase("help")) {
                 List<String> messages = new ArrayList<>();
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb create <partida>"));
+                messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb delete <partida>"));
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb join <partida>"));
+                messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb leave"));
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb inv"));
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb admin setlobby <partida>"));
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb admin setplayersspawn <partida>"));
@@ -111,7 +149,7 @@ public class EBCmd implements CommandExecutor {
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb admin forcestop <partida>"));
                 messages.add(ChatColor.translateAlternateColorCodes('&', "/edlb admin spawnchests <partida>"));
 
-                for(String msg : messages) {
+                for (String msg : messages) {
                     player.sendMessage(msg);
                 }
 

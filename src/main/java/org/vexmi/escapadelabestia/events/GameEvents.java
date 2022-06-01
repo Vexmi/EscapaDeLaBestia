@@ -1,19 +1,18 @@
 package org.vexmi.escapadelabestia.events;
 
-import org.vexmi.escapadelabestia.EscapaBestia;
-import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
-import org.vexmi.escapadelabestia.classes.Game;
-import org.vexmi.escapadelabestia.managers.GameManager;
-import org.vexmi.escapadelabestia.utils.GameUtils;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-
-import java.util.logging.Level;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.vexmi.escapadelabestia.EscapaBestia;
+import org.vexmi.escapadelabestia.classes.EscapaBestiaPlayer;
+import org.vexmi.escapadelabestia.classes.Game;
+import org.vexmi.escapadelabestia.managers.GameManager;
+import org.vexmi.escapadelabestia.utils.GameUtils;
 
 public class GameEvents implements Listener {
 
@@ -40,8 +39,8 @@ public class GameEvents implements Listener {
                     if (eBestia.getPlayer() == player)
                         if (ePlayer == eBestia)
                             e.setCancelled(true);
-                    else
-                        e.setCancelled(true);
+                        else
+                            e.setCancelled(true);
                 }
             }
         }
@@ -68,12 +67,26 @@ public class GameEvents implements Listener {
                 EscapaBestiaPlayer eBestia = game.getBestia();
                 if (eKiller == eBestia)
                     GameUtils.sendKillMsgToAllPlayers(game, gameM, eKilled, eKiller, plugin);
-                else if (eKiller == null && player == null)
-                    GameUtils.sendKillMsgToAllPlayers(game, gameM, eKilled, null, plugin);
                 else
                     GameUtils.sendKillMsgToAllPlayers(game, gameM, eKilled, null, plugin);
 
                 eKilled.setDead(true);
+                eKilled.setRespawning(true);
+                eKilled.setDeadLocation(killed.getLocation());
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        if (plugin.getPlayerGame(e.getPlayer().getName()) != null) {
+            Game game = plugin.getPlayerGame(e.getPlayer().getName());
+            EscapaBestiaPlayer ePlayer = game.getPlayer(e.getPlayer().getName());
+            assert ePlayer != null;
+            if (ePlayer.isRespawning()) {
+                e.setRespawnLocation(ePlayer.getDeadLocation());
+                ePlayer.setRespawning(false);
+                e.getPlayer().setGameMode(GameMode.SPECTATOR);
             }
         }
     }

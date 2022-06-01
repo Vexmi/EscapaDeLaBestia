@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Game {
 
@@ -14,6 +15,7 @@ public class Game {
     private int minPlayers;
     private int maxPlayers;
     private int actualPlayers;
+    private int deadPlayers;
     private GameState state = null;
     private Location lobby = null;
     private Location bestiaSpawn = null;
@@ -32,11 +34,25 @@ public class Game {
         this.setMinPlayers(minPlayers);
         this.setMaxPlayers(maxPlayers);
         this.setActualPlayers(0);
+
         this.setState(GameState.WAITING);
         this.time = 0;
         this.maxTime = 60;
         this.isGameFinishing = false;
     }
+
+    public int getDeadPlayers() {
+        List<EscapaBestiaPlayer> deadPlayers = new ArrayList<>();
+        for(EscapaBestiaPlayer eplayer : players) {
+            if(eplayer.isDead()) {
+                deadPlayers.add(eplayer);
+            }
+        }
+
+        return deadPlayers.size();
+    }
+
+
 
     public Location getChestsLocation() {
         return this.chestsLocation;

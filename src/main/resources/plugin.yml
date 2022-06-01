@@ -5,8 +5,6 @@ main: org.vexmi.escapadelabestia.EscapaBestia
 load: POSTWORLD
 softdepend:
   - PlaceHolderAPI
-depend:
-  - Multiverse-Core
 authors:
   - Adrigamer2950
   - SrBigos

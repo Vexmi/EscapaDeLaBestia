@@ -106,20 +106,20 @@ public class GameManager {
             }
         }
 
-        FileConfiguration mainlobby = plugin.getMainLobby();
-        World world;
-        if (Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
-            return ErrorCodes.WORLD_NOT_FOUND;
-        else
-            world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
-
-        double x = Double.parseDouble(mainlobby.getString("MainLobby.x"));
-        double y = Double.parseDouble(mainlobby.getString("MainLobby.y"));
-        double z = Double.parseDouble(mainlobby.getString("MainLobby.z"));
-        float yaw = Float.parseFloat(mainlobby.getString("MainLobby.yaw"));
-        float pitch = Float.parseFloat(mainlobby.getString("MainLobby.pitch"));
-        Location l = new Location(world, x, y, z, yaw, pitch);
-        player.teleport(l);
+//        FileConfiguration mainlobby = plugin.getMainLobby();
+//        World world;
+//        if (Bukkit.getWorld(mainlobby.getString("MainLobby.world")) == null)
+//            return ErrorCodes.WORLD_NOT_FOUND;
+//        else
+//            world = Bukkit.getWorld(mainlobby.getString("MainLobby.world"));
+//
+//        double x = Double.parseDouble(mainlobby.getString("MainLobby.x"));
+//        double y = Double.parseDouble(mainlobby.getString("MainLobby.y"));
+//        double z = Double.parseDouble(mainlobby.getString("MainLobby.z"));
+//        float yaw = Float.parseFloat(mainlobby.getString("MainLobby.yaw"));
+//        float pitch = Float.parseFloat(mainlobby.getString("MainLobby.pitch"));
+//        Location l = new Location(world, x, y, z, yaw, pitch);
+//        player.teleport(l);
 
         player.getInventory().setContents(savedInventory);
         player.getInventory().setArmorContents(savedEquipment);
@@ -147,9 +147,9 @@ public class GameManager {
     @SuppressWarnings("unlikely-arg-type")
     public void startGame(@NotNull Game game) {
         ArrayList<EscapaBestiaPlayer> players = game.getPlayers();
-        for (EscapaBestiaPlayer p : players) {
+        for (EscapaBestiaPlayer p : players)
             p.getPlayer().setGameMode(GameMode.SURVIVAL);
-        }
+
         game.setState(GameState.PLAYING);
         game.determineBestia();
 
@@ -158,15 +158,14 @@ public class GameManager {
         setBestiaInv(game.getBestia());
 
         ErrorCodes tpError = teleportPlayers(game);
-        if(tpError.getMessage() != null) {
-            for (EscapaBestiaPlayer p : players) {
+        if(tpError.getMessage() != null)
+            for (EscapaBestiaPlayer p : players)
                 p.getPlayer().sendMessage(tpError.getMessage());
-            }
-        }
 
-        for (EscapaBestiaPlayer p : players) {
+        new ScoreboardManager(game).showScoreboard();
+
+        for (EscapaBestiaPlayer p : players)
             p.getPlayer().sendMessage(Messages.StartGame);
-        }
 
         cooldownM.cooldownGame(game, plugin);
     }
@@ -207,7 +206,7 @@ public class GameManager {
         return ErrorCodes.UNKNOWN_ERROR;
     }
 
-    public static ErrorCodes teleportBestiaToPlayersSpawn(@NotNull Game game) {
+    protected static ErrorCodes teleportBestiaToPlayersSpawn(@NotNull Game game) {
         if (game.getPlayersSpawn() == null)
             return ErrorCodes.NO_PLAYERS_SPAWN;
 

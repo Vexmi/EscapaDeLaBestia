@@ -111,5 +111,6 @@ public class Messages {
         public static String GAME_NOT_ENABLED = ChatColor.translateAlternateColorCodes('&', "&cError! La partida no esta activada. &4Código de error&6 9");
         public static String GAME_IS_PLAYING = ChatColor.translateAlternateColorCodes('&', "&cError! La partida ya fue iniciada. &4Código de error&6 10");
         public static String GAME_IS_FULL = ChatColor.translateAlternateColorCodes('&', "&cError! La partida esta llena. &4Código de error&6 11");
+        public static String PLAYER_ISNT_IN_GAME = ChatColor.translateAlternateColorCodes('&', "&cError! No te encuentras en una partida. &4Código de error&6 12");
     }
 }
